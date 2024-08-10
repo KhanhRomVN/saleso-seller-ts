@@ -1,22 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import { GoogleLogin } from "@react-oauth/google";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { BACKEND_URI } from "@/api";
-
-const gradientBackgroundUri =
-  "https://i.ibb.co/HFMBf1q/Orange-And-White-Gradient-Background.jpg";
-
-interface GoogleUserData {
-  email: string;
-  name: string;
-  picture: string;
-  sub: string;
-}
 
 const EmailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -61,76 +49,18 @@ const EmailPage: React.FC = () => {
     navigate("/login");
   };
 
-  const handleGoogleLoginSuccess = async (credentialResponse: any) => {
-    try {
-      const decoded = jwtDecode(
-        credentialResponse.credential
-      ) as GoogleUserData;
-      const { email, name, picture, sub } = decoded;
-      const userData = { email, name, picture, sub };
-      const response = await axios.post(
-        `${BACKEND_URI}/auth/login/google`,
-        userData
-      );
-      const { accessToken, refreshToken, currentUser } = response.data;
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("currentUser", JSON.stringify(currentUser));
-
-      let localStorageCurrentUser = JSON.parse(
-        localStorage.getItem("currentUser") || "{}"
-      );
-      if (!localStorageCurrentUser.username) {
-        const username = prompt("Please enter your username:");
-        if (username) {
-          const updateResponse = await axios.post(
-            `${BACKEND_URI}/user/update-username`,
-            { username },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                accessToken,
-              },
-            }
-          );
-          localStorageCurrentUser.username = updateResponse.data.username;
-          localStorage.setItem(
-            "currentUser",
-            JSON.stringify(localStorageCurrentUser)
-          );
-        } else {
-          console.error("Username is required.");
-          return;
-        }
-      }
-
-      console.log("Login successful!");
-      navigate("/");
-    } catch (err) {
-      console.error("Google login failed.");
-    }
-  };
-
-  const handleGoogleLoginError = () => {
-    console.error("Google login failed.");
-  };
-
   return (
-    <div
-      className="h-screen flex justify-center items-center bg-cover bg-center flex-col"
-      style={{ backgroundImage: `url(${gradientBackgroundUri})` }}
-    >
-      <Card className="w-96">
-        <CardHeader className="space-y-1">
-          <div className="w-full h-9">
+    <div className="flex justify-center items-center flex-col w-screen h-screen bg-background">
+      <Card className="bg-background_secondary rounded-lg w-full max-w-md mb-5">
+        <CardHeader className="space-y-1 flex flex-col items-center">
+          <div className="w-full h-9 flex justify-center">
             <img
-              src="https://i.postimg.cc/jd0dTYF1/logo.png"
+              src="https://i.ibb.co/CMSJMK3/Brandmark-make-your-logo-in-minutes-removebg-preview.png"
               alt="logo"
               className="object-cover h-full"
             />
           </div>
-          <p variant="h4">Welcome to Saleso!</p>
-          <p variant="muted">Create an account to experience many new things</p>
+          <p>Create an account to experience many new things</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -165,21 +95,14 @@ const EmailPage: React.FC = () => {
           >
             {showOTPInput ? "Verify OTP" : "Register"}
           </Button>
-          <div className="w-full flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleLoginSuccess}
-              onError={handleGoogleLoginError}
-              useOneTap
-            />
-          </div>
         </CardContent>
+        <div className="flex mb-2 items-center flex-col">
+          <p className="text-primary_color">Already have an account?</p>
+          <p className="text-primary cursor-pointer" onClick={navigateToLogin}>
+            Login here
+          </p>
+        </div>
       </Card>
-      <div className="flex mt-2 gap-2">
-        <p variant="muted">Already have an account?</p>
-        <p className="text-primary cursor-pointer" onClick={navigateToLogin}>
-          Login here
-        </p>
-      </div>
     </div>
   );
 };

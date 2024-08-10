@@ -30,9 +30,9 @@
     --chart-3: #2c3e50;
     --chart-4: #f1c40f;
     --chart-5: #e67e22; 
-    --super-text: #3b82f6;
+
   }
-  .dark {
+  .dark { 
     --background: #111315;
     --background-secondary: #1a1d1f;
     --foreground: #f8fafc;
@@ -58,7 +58,6 @@
     --chart-3: #ff9900;
     --chart-4: #9933cc;
     --chart-5: #ff3366;
-    --super-text: #ff6666;
   }
 }
 

@@ -52,6 +52,7 @@ module.exports = {
           DEFAULT: "var(--card)",
           foreground: "var(--card-foreground)",
         },
+        primary_color: "#318CE7",
       },
       borderRadius: {
         lg: "var(--radius)",

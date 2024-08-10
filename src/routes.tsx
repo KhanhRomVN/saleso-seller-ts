@@ -3,7 +3,6 @@ import HomePage from "@/pages/HomePage";
 
 // Auth Page
 import EmailPage from "./pages/RegisterPage";
-import UsernameGooglePage from "@/pages/UsernameGooglePage";
 import LoginPage from "@/pages/LoginPage";
 
 // Product Page
@@ -12,7 +11,6 @@ import LoginPage from "@/pages/LoginPage";
 // import ProductEditPage from '~/pages/ProductPage/ProductEditPage/ProductEditPage'
 
 // Discount
-import DiscountManagementPage from "./pages/DiscountPage/DiscountManagementPage";
 
 // Layout Component
 import DefaultLayout from "@/layout/defaultLayout";
@@ -25,10 +23,6 @@ const publicRoutes = [
   {
     path: "/login",
     element: <LoginPage />,
-  },
-  {
-    path: "/register/username/:sub",
-    element: <UsernameGooglePage />,
   },
   {
     path: "/",
@@ -62,14 +56,14 @@ const publicRoutes = [
   //     </DefaultLayout>
   //   ),
   // },
-  {
-    path: "/discount-management",
-    element: (
-      <DefaultLayout>
-        <DiscountManagementPage />
-      </DefaultLayout>
-    ),
-  },
+  // {
+  //   path: "/discount-management",
+  //   element: (
+  //     <DefaultLayout>
+  //       <DiscountManagementPage />
+  //     </DefaultLayout>
+  //   ),
+  // },
 ];
 
 export { publicRoutes };
