@@ -4,16 +4,24 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Search, Keyboard } from "lucide-react";
 
-const HeaderBar = () => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [searchText, setSearchText] = useState("");
+interface User {
+  username: string;
+  role: string;
+}
+
+const HeaderBar: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [searchText, setSearchText] = useState<string>("");
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("currentUser"));
-    setCurrentUser(user);
+    const userString = localStorage.getItem("currentUser");
+    if (userString) {
+      const user: User = JSON.parse(userString);
+      setCurrentUser(user);
+    }
   }, []);
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value);
   };
 

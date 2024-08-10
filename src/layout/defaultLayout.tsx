@@ -1,7 +1,12 @@
+import React from "react";
 import HeaderBar from "@/components/HeaderBar";
 import Sidebar from "@/components/SideBar";
 
-const DefaultLayout = ({ children }) => {
+interface DefaultLayoutProps {
+  children: React.ReactNode;
+}
+
+const DefaultLayout: React.FC<DefaultLayoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen flex-col">
       <HeaderBar />
