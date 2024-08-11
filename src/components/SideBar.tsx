@@ -39,7 +39,7 @@ const menuItems = [
       },
       {
         text: "Discount",
-        path: "/discount-management",
+        path: "/discount",
         icon: <DollarSign className="h-4 w-4" />,
       },
     ],

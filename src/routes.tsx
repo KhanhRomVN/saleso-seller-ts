@@ -11,7 +11,7 @@ import LoginPage from "@/pages/LoginPage";
 // import ProductEditPage from '~/pages/ProductPage/ProductEditPage/ProductEditPage'
 
 // Discount
-
+import DiscountPage from "@/pages/DiscountPage";
 // Layout Component
 import DefaultLayout from "@/layout/defaultLayout";
 
@@ -32,38 +32,14 @@ const publicRoutes = [
       </DefaultLayout>
     ),
   },
-  // {
-  //   path: '/product',
-  //   element: (
-  //     <DefaultLayout>
-  //       <ManagementProductPage />
-  //     </DefaultLayout>
-  //   ),
-  // },
-  // {
-  //   path: '/product/add',
-  //   element: (
-  //     <DefaultLayout>
-  //       <AddProductPage />
-  //     </DefaultLayout>
-  //   ),
-  // },
-  // {
-  //   path: '/product/edit/:product_id',
-  //   element: (
-  //     <DefaultLayout>
-  //       <ProductEditPage />
-  //     </DefaultLayout>
-  //   ),
-  // },
-  // {
-  //   path: "/discount-management",
-  //   element: (
-  //     <DefaultLayout>
-  //       <DiscountManagementPage />
-  //     </DefaultLayout>
-  //   ),
-  // },
+  {
+    path: "/discount",
+    element: (
+      <DefaultLayout>
+        <DiscountPage />
+      </DefaultLayout>
+    ),
+  },
 ];
 
 export { publicRoutes };
