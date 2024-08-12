@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +30,6 @@ interface ProductData {
   description: string;
   countryOfOrigin: string;
   brand: string;
-  isHandmade: boolean;
   attributes_name?: string;
   attributes?: Attribute[];
   price?: number;
@@ -85,10 +83,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         [name]: name === "price" || name === "stock" ? Number(value) : value,
       }));
     }
-  };
-
-  const handleCheckboxChange = (checked: boolean) => {
-    setProductData((prev) => ({ ...prev, isHandmade: checked }));
   };
 
   const handleAttributeChange = (
@@ -173,8 +167,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   return (
-    <div className="bg-background_secondary w-full p-6 space-y-6">
-      <h2 className="text-2xl font-bold mb-4">Product Detail</h2>
+    <div className="bg-background_secondary w-full p-2">
+      <h2 className="mb-4">Product Detail</h2>
 
       <div className="space-y-4">
         <div>
@@ -197,33 +191,60 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           />
         </div>
 
-        <div>
-          <Label htmlFor="countryOfOrigin">Country of Origin</Label>
-          <Input
-            id="countryOfOrigin"
-            name="countryOfOrigin"
-            value={productData.countryOfOrigin}
-            onChange={handleInputChange}
-          />
+        <div className="flex w-full gap-3">
+          <div className="w-1/2">
+            <Label htmlFor="countryOfOrigin">Country of Origin</Label>
+            <Input
+              id="countryOfOrigin"
+              name="countryOfOrigin"
+              value={productData.countryOfOrigin}
+              onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="w-1/2">
+            <Label htmlFor="brand">Brand</Label>
+            <Input
+              id="brand"
+              name="brand"
+              value={productData.brand}
+              onChange={handleInputChange}
+            />
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="brand">Brand</Label>
-          <Input
-            id="brand"
-            name="brand"
-            value={productData.brand}
-            onChange={handleInputChange}
-          />
-        </div>
+        <div className="flex w-full gap-3">
+          <div className="w-1/2">
+            <Label htmlFor="price">Price</Label>
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              value={productData.price}
+              onChange={handleInputChange}
+              disabled={
+                !isPriceStockMode &&
+                productData.attributes &&
+                productData.attributes.length > 0
+              }
+            />
+          </div>
 
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="isHandmade"
-            checked={productData.isHandmade}
-            onCheckedChange={handleCheckboxChange}
-          />
-          <Label htmlFor="isHandmade">Handmade</Label>
+          <div className="w-1/2">
+            <Label htmlFor="stock">Stock</Label>
+            <Input
+              id="stock"
+              name="stock"
+              type="number"
+              value={productData.stock}
+              onChange={handleInputChange}
+              disabled={
+                !isPriceStockMode &&
+                productData.attributes &&
+                productData.attributes.length > 0
+              }
+            />
+          </div>
         </div>
 
         <div>
@@ -312,37 +333,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               Add Attribute
             </Button>
           </div>
-        </div>
-        <div>
-          <Label htmlFor="price">Price</Label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            value={productData.price}
-            onChange={handleInputChange}
-            disabled={
-              !isPriceStockMode &&
-              productData.attributes &&
-              productData.attributes.length > 0
-            }
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="stock">Stock</Label>
-          <Input
-            id="stock"
-            name="stock"
-            type="number"
-            value={productData.stock}
-            onChange={handleInputChange}
-            disabled={
-              !isPriceStockMode &&
-              productData.attributes &&
-              productData.attributes.length > 0
-            }
-          />
         </div>
 
         <div>

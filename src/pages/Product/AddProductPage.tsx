@@ -2,6 +2,8 @@ import React, { useState, useCallback } from "react";
 import Cropper, { Area } from "react-easy-crop";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   handleImageSelect,
   cropImageFile,
@@ -11,6 +13,8 @@ import CategoriesSelectedDialog from "@/components/CategoriesSelectedDialog";
 import { X } from "lucide-react";
 import ProductDetail from "./ProductDetail";
 import { BACKEND_URI } from "@/api";
+import TagInput from "@/components/TagInput";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Category {
   _id: string;
@@ -22,7 +26,6 @@ interface ProductData {
   description: string;
   countryOfOrigin: string;
   brand: string;
-  isHandmade: boolean;
   attributes_name?: string;
   attributes?: Attribute[];
   price?: number;
@@ -44,15 +47,14 @@ interface Detail {
   details_info: string;
 }
 
-import TagInput from "@/components/TagInput";
-
 const AddProductPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [productData, setProductData] = useState<ProductData>({
     name: "",
     description: "",
     countryOfOrigin: "",
     brand: "",
-    isHandmade: false,
     details: [],
     categories: [],
     tags: [],
@@ -84,6 +86,9 @@ const AddProductPage: React.FC = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     handleImageSelect(event, setSelectedImages, setIsModalOpen);
+    toast({
+      description: "Images selected successfully",
+    });
   };
 
   const handleCropImage = async () => {
@@ -96,6 +101,9 @@ const AddProductPage: React.FC = () => {
         const imageUrl = await handleUploadCroppedImage(croppedImage);
         if (imageUrl) {
           setImages((prevImages) => [...prevImages, imageUrl]);
+          toast({
+            description: "Image cropped and uploaded successfully",
+          });
         }
       }
     }
@@ -123,24 +131,40 @@ const AddProductPage: React.FC = () => {
     setImages((prevImages) =>
       prevImages.filter((_, index) => index !== indexToDelete)
     );
+    toast({
+      description: "Image deleted successfully",
+    });
   };
 
   const handleSelectCategories = (selectedCategories: Category[]) => {
     setCategories(selectedCategories);
+    toast({
+      description: "Categories updated successfully",
+    });
   };
 
   const handleDeleteCategory = (categoryToDelete: Category) => {
     setCategories((prevCategories) =>
       prevCategories.filter((category) => category._id !== categoryToDelete._id)
     );
+    toast({
+      description: "Category removed successfully",
+    });
   };
 
   const handleSubmit = async () => {
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
-      console.error("Access token not found");
+      toast({
+        variant: "destructive",
+        description: "Access token not found",
+      });
       return;
     }
+
+    toast({
+      description: "Creating product...",
+    });
 
     try {
       const product = {
@@ -149,23 +173,30 @@ const AddProductPage: React.FC = () => {
         images,
         tags,
       };
-      console.log(product);
 
-      // const response = await fetch(`${BACKEND_URI}/product/create`, {
-      //   method: "POST",
-      //   headers: {
-      //     accessToken,
-      //   },
-      //   body: JSON.stringify(productData),
-      // });
+      const response = await axios.post(
+        `${BACKEND_URI}/product/create`,
+        product,
+        {
+          headers: {
+            accessToken,
+          },
+        }
+      );
 
-      // if (!response.ok) {
-      //   throw new Error("Failed to create product");
-      // }
+      toast({
+        description: "Product created successfully",
+      });
+      console.log("Product created:", response.data);
 
-      // const result = await response.json();
-      // console.log("Product created:", result);
+      setTimeout(() => {
+        navigate("/product/management");
+      }, 3000);
     } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "Error creating product",
+      });
       console.error("Error creating product:", error);
     }
   };
@@ -257,14 +288,35 @@ const AddProductPage: React.FC = () => {
           <TagInput tags={tags} setTags={setTags} />
         </div>
         {/* Product Action */}
-        <div
-          onClick={handleSubmit}
-          className="cursor-pointer w-full py-1 bg-white text-black text-center rounded-lg"
-        >
-          Create Product
-        </div>
-        <div className="cursor-pointer w-full py-1 bg-blue-500 text-black text-center rounded-lg">
-          Save Draft
+        <div className="flex justify-around w-full gap-2.5">
+          <div
+            className="cursor-pointer w-full py-1 bg-red-500 text-black text-center rounded-lg"
+            onClick={() => {
+              toast({
+                description: "Action cancelled",
+              });
+              navigate(-1);
+            }}
+          >
+            Cancel
+          </div>
+          <div
+            className="cursor-pointer w-full py-1 bg-blue-500 text-black text-center rounded-lg"
+            onClick={() => {
+              toast({
+                description: "Draft saved",
+              });
+              // Add logic to save draft
+            }}
+          >
+            Save Draft
+          </div>
+          <div
+            onClick={handleSubmit}
+            className="cursor-pointer w-full py-1 bg-white text-black text-center rounded-lg"
+          >
+            Create Product
+          </div>
         </div>
       </div>
       <div className="w-[60%]">
