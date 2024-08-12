@@ -14,6 +14,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+interface Category {
+  _id: string;
+  name: string;
+}
+
 interface Attribute {
   attributes_value: string;
   attributes_quantity: number;
@@ -35,6 +40,9 @@ interface ProductData {
   price?: number;
   stock?: number;
   details: Detail[];
+  categories: Category[];
+  tags: string[];
+  images: string[];
 }
 
 interface ProductDetailProps {

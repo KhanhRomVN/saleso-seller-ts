@@ -1,64 +1,36 @@
-import React, { useState, useCallback } from "react";
-import Cropper, { Area } from "react-easy-crop";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import {
-  handleImageSelect,
-  cropImageFile,
-  handleUploadCroppedImage,
-} from "@/utils/imageUtils";
-import CategoriesSelectedDialog from "@/components/CategoriesSelectedDialog";
-import { X } from "lucide-react";
-import ProductDetail from "./ProductDetail";
-import { BACKEND_URI } from "@/api";
-import TagInput from "@/components/TagInput";
-import { useToast } from "@/components/ui/use-toast";
+// AddProductPage.tsx
 
-// ... (interfaces remain the same)
+import React, { useState, useCallback } from "react";
+// ... other imports
+
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface ProductData {
+  name: string;
+  description: string;
+  countryOfOrigin: string;
+  brand: string;
+  attributes_name?: string;
+  attributes?: Attribute[];
+  price?: number;
+  stock?: number;
+  details: Detail[];
+  categories: Category[];
+  tags: string[];
+  images: string[];
+}
+
+// ... rest of the imports and interfaces
 
 const AddProductPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  // ... other state declarations
 
-  // ... (state declarations remain the same)
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    handleImageSelect(event, setSelectedImages, setIsModalOpen);
-    toast({
-      description: "Images selected successfully",
-    });
-  };
-
-  const handleCropImage = async () => {
-    if (croppedAreaPixels && selectedImages[currentImageIndex]) {
-      const croppedImage = await cropImageFile(
-        croppedAreaPixels,
-        URL.createObjectURL(selectedImages[currentImageIndex])
-      );
-      if (croppedImage) {
-        const imageUrl = await handleUploadCroppedImage(croppedImage);
-        if (imageUrl) {
-          setImages((prevImages) => [...prevImages, imageUrl]);
-          toast({
-            description: "Image cropped and uploaded successfully",
-          });
-        }
-      }
-    }
-
-    // ... (rest of the function remains the same)
-  };
-
-  const handleDeleteImage = (indexToDelete: number) => {
-    setImages((prevImages) =>
-      prevImages.filter((_, index) => index !== indexToDelete)
-    );
-    toast({
-      description: "Image deleted successfully",
-    });
-  };
+  // ... other functions
 
   const handleSelectCategories = (selectedCategories: Category[]) => {
     setCategories(selectedCategories);
@@ -76,89 +48,54 @@ const AddProductPage: React.FC = () => {
     });
   };
 
-  const handleSubmit = async () => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) {
-      toast({
-        variant: "destructive",
-        description: "Access token not found",
-      });
-      return;
-    }
-
-    toast({
-      description: "Creating product...",
-    });
-
-    try {
-      const product = {
-        ...productData,
-        categories,
-        images,
-        tags,
-      };
-
-      console.log(product);
-
-      const response = await axios.post(
-        `${BACKEND_URI}/product/create`,
-        product,
-        {
-          headers: {
-            accessToken,
-          },
-        }
-      );
-
-      console.log(response.data);
-
-      toast({
-        description: "Product created successfully",
-      });
-      console.log("Product created:", response.data);
-
-      setTimeout(() => {
-        navigate("/product/management");
-      }, 3000);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        description: "Error creating product",
-      });
-      console.error("Error creating product:", error);
-    }
-  };
-
-  // ... (rest of the component remains the same)
+  // ... rest of the component
 
   return (
-    <div className="flex justify-between gap-2">
-      {/* ... (JSX remains largely the same) */}
-      <div
-        className="cursor-pointer w-full py-1 bg-red-500 text-black text-center rounded-lg"
-        onClick={() => {
-          toast({
-            description: "Action cancelled",
-          });
-          navigate(-1);
-        }}
-      >
-        Cancel
-      </div>
-      <div
-        className="cursor-pointer w-full py-1 bg-blue-500 text-black text-center rounded-lg"
-        onClick={() => {
-          toast({
-            description: "Draft saved",
-          });
-          // Add logic to save draft
-        }}
-      >
-        Save Draft
-      </div>
-      {/* ... (rest of the JSX remains the same) */}
+    // ... other JSX
+    <div className="w-[60%]">
+      <ProductDetail
+        productData={productData}
+        setProductData={setProductData}
+      />
     </div>
+    // ... rest of the JSX
+
+    <CategoriesSelectedDialog
+      isOpen={isCategoryModalOpen}
+      onClose={() => setIsCategoryModalOpen(false)}
+      onSelectCategories={handleSelectCategories}
+    />
   );
 };
 
-export default AddProductPage;
+// CategoriesSelectedDialog.tsx
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectCategories: (categories: Category[]) => void;
+}
+
+const CategoriesSelectedDialog: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  onSelectCategories,
+}) => {
+  // ... rest of the component
+};
+
+// ProductDetail.tsx
+
+interface ProductDetailProps {
+  productData: ProductData;
+  setProductData: React.Dispatch<React.SetStateAction<ProductData>>;
+}
+
+const ProductDetail: React.FC<ProductDetailProps> = ({
+  productData,
+  setProductData,
+}) => {
+  // ... rest of the component
+};
+
+export default ProductDetail;

@@ -21,6 +21,17 @@ interface Category {
   name: string;
 }
 
+interface Attribute {
+  attributes_value: string;
+  attributes_quantity: number;
+  attributes_price: number;
+}
+
+interface Detail {
+  details_name: string;
+  details_info: string;
+}
+
 interface ProductData {
   name: string;
   description: string;
@@ -34,17 +45,6 @@ interface ProductData {
   categories: Category[];
   tags: string[];
   images: string[];
-}
-
-interface Attribute {
-  attributes_value: string;
-  attributes_quantity: number;
-  attributes_price: number;
-}
-
-interface Detail {
-  details_name: string;
-  details_info: string;
 }
 
 const AddProductPage: React.FC = () => {
@@ -265,16 +265,16 @@ const AddProductPage: React.FC = () => {
           {categories.length > 0 && (
             <div className="mt-2 bg-background p-2">
               <div className="flex flex-wrap gap-1.5 rounded-lg">
-                {categories.map((category_name, index) => (
+                {categories.map((category, index) => (
                   <div
                     key={index}
                     className="bg-blue-600 px-2 rounded-lg flex gap-1 items-center"
                   >
-                    <p>{category_name}</p>
+                    <p>{category.name}</p>
                     <X
                       size={14}
                       className="cursor-pointer"
-                      onClick={() => handleDeleteCategory(category_name)}
+                      onClick={() => handleDeleteCategory(category)}
                     />
                   </div>
                 ))}
