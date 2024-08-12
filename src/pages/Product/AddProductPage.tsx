@@ -11,7 +11,7 @@ import {
 } from "@/utils/imageUtils";
 import CategoriesSelectedDialog from "@/components/CategoriesSelectedDialog";
 import { X } from "lucide-react";
-import ProductDetail from "./ProductDetail";
+import ProductDetail from "../../components/ProductDetail";
 import { BACKEND_URI } from "@/api";
 import TagInput from "@/components/TagInput";
 import { useToast } from "@/components/ui/use-toast";

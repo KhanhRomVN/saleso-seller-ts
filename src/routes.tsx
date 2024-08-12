@@ -57,7 +57,7 @@ const publicRoutes = [
     ),
   },
   {
-    path: "/product/edit",
+    path: "/product/edit/:product_id",
     element: (
       <DefaultLayout>
         <EditProductPage />
