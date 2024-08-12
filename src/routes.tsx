@@ -6,9 +6,9 @@ import EmailPage from "./pages/RegisterPage";
 import LoginPage from "@/pages/LoginPage";
 
 // Product Page
-// import AddProductPage from '~/pages/ProductPage/AddProductPage/AddProductPage'
-// import ManagementProductPage from '~/pages/ProductPage/ManagementProductPage/ManagementProductPage'
-// import ProductEditPage from '~/pages/ProductPage/ProductEditPage/ProductEditPage'
+import AddProductPage from "./pages/Product/AddProductPage";
+import EditProductPage from "./pages/Product/EditProductPage";
+import ProductManagementPage from "./pages/Product/ProductManagementPage";
 
 // Discount
 import DiscountPage from "@/pages/DiscountPage";
@@ -37,6 +37,30 @@ const publicRoutes = [
     element: (
       <DefaultLayout>
         <DiscountPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/product/management",
+    element: (
+      <DefaultLayout>
+        <ProductManagementPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/product/add",
+    element: (
+      <DefaultLayout>
+        <AddProductPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/product/edit",
+    element: (
+      <DefaultLayout>
+        <EditProductPage />
       </DefaultLayout>
     ),
   },

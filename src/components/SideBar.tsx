@@ -34,7 +34,7 @@ const menuItems = [
       },
       {
         text: "Product",
-        path: "/product",
+        path: "/product/add",
         icon: <Store className="h-4 w-4" />,
       },
       {

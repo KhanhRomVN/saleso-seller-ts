@@ -4,23 +4,13 @@ import { v4 as uuidv4 } from "uuid";
 
 export const handleImageSelect = (
   event: React.ChangeEvent<HTMLInputElement>,
-  setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>,
+  setSelectedImages: React.Dispatch<React.SetStateAction<File[]>>,
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   if (event.target.files && event.target.files.length > 0) {
     const filesArray = Array.from(event.target.files);
-    const readerPromises = filesArray.map((file) => {
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(readerPromises).then((results) => {
-      setSelectedImages(results);
-      setIsModalOpen(true);
-    });
+    setSelectedImages(filesArray);
+    setIsModalOpen(true);
   }
 };
 

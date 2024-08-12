@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -50,6 +50,7 @@ const StatusTag: React.FC<{ status: string }> = ({ status }) => {
 };
 
 const DiscountTicket: React.FC<DiscountTicketProps> = ({ discount }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const renderValue = () => {
     if (
       discount.type === "percentage" ||
@@ -100,10 +101,11 @@ const DiscountTicket: React.FC<DiscountTicketProps> = ({ discount }) => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Card
           className={`hover:cursor-pointer ${getBgColor()} text-white transition-colors duration-300 ease-in-out transform hover:scale-105`}
+          onClick={() => setIsDialogOpen(true)}
         >
           <CardHeader className="p-4">
             <div className="flex justify-between items-center mb-2">
@@ -148,7 +150,11 @@ const DiscountTicket: React.FC<DiscountTicketProps> = ({ discount }) => {
         </Card>
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
-        <DiscountTicketDialog discount_id={discount._id} />
+        <DiscountTicketDialog
+          discount_id={discount._id}
+          isOpen={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
