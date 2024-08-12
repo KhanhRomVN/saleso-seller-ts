@@ -10,12 +10,13 @@ import {
 import CategoriesSelectedDialog from "@/components/CategoriesSelectedDialog";
 import { X } from "lucide-react";
 import ProductDetail from "./ProductDetail";
-import { BACKEND_URI } from "@/api";
 
 interface Category {
   _id: string;
   name: string;
 }
+
+import TagInput from "@/components/TagInput";
 
 interface ProductData {
   name: string;
@@ -44,8 +45,6 @@ interface Detail {
   details_info: string;
 }
 
-import TagInput from "@/components/TagInput";
-
 const AddProductPage: React.FC = () => {
   const [productData, setProductData] = useState<ProductData>({
     name: "",
@@ -65,19 +64,11 @@ const AddProductPage: React.FC = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
-    width: number;
-    height: number;
-    x: number;
-    y: number;
-  } | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   const onCropComplete = useCallback(
-    (croppedArea: Area, croppedAreaPixels: Area) => {
+    (_croppedArea: Area, croppedAreaPixels: Area) => {
       setCroppedAreaPixels(croppedAreaPixels);
-      console.log(croppedArea);
     },
     []
   );
@@ -96,6 +87,10 @@ const AddProductPage: React.FC = () => {
         const imageUrl = await handleUploadCroppedImage(croppedImage);
         if (imageUrl) {
           setImages((prevImages) => [...prevImages, imageUrl]);
+          setProductData((prevData) => ({
+            ...prevData,
+            images: [...prevData.images, imageUrl],
+          }));
         }
       }
     }
@@ -123,16 +118,17 @@ const AddProductPage: React.FC = () => {
     setImages((prevImages) =>
       prevImages.filter((_, index) => index !== indexToDelete)
     );
+    setProductData((prevData) => ({
+      ...prevData,
+      images: prevData.images.filter((_, index) => index !== indexToDelete),
+    }));
   };
 
   const handleSelectCategories = (selectedCategories: Category[]) => {
-    setCategories(selectedCategories);
-  };
-
-  const handleDeleteCategory = (categoryToDelete: Category) => {
-    setCategories((prevCategories) =>
-      prevCategories.filter((category) => category._id !== categoryToDelete._id)
-    );
+    setProductData((prevData) => ({
+      ...prevData,
+      categories: selectedCategories,
+    }));
   };
 
   const handleSubmit = async () => {
@@ -143,41 +139,35 @@ const AddProductPage: React.FC = () => {
     }
 
     try {
-      const product = {
-        ...productData,
-        categories,
-        images,
-        tags,
-      };
-      console.log(product);
+      const response = await fetch("/product/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(productData),
+      });
 
-      // const response = await fetch(`${BACKEND_URI}/product/create`, {
-      //   method: "POST",
-      //   headers: {
-      //     accessToken,
-      //   },
-      //   body: JSON.stringify(productData),
-      // });
+      if (!response.ok) {
+        throw new Error("Failed to create product");
+      }
 
-      // if (!response.ok) {
-      //   throw new Error("Failed to create product");
-      // }
-
-      // const result = await response.json();
-      // console.log("Product created:", result);
+      const result = await response.json();
+      console.log("Product created:", result);
+      // Handle success (e.g., show a success message, redirect, etc.)
     } catch (error) {
       console.error("Error creating product:", error);
+      // Handle error (e.g., show an error message)
     }
   };
 
   return (
     <div className="flex justify-between gap-2">
-      <div className="w-[40%] flex flex-col  gap-2">
-        {/* Image */}
+      <div className="w-[40%] flex flex-col gap-2">
+        {/* Image upload section */}
         <div className="w-full bg-background_secondary p-2">
           <p className="mb-2">Product Images</p>
           <div className="w-full">
-            {/* Image Upload */}
             <div className="bg-background w-full h-[140px] rounded-lg flex flex-col items-center justify-center mb-2">
               <p>Upload Images</p>
               <div className="flex gap-1 items-center">
@@ -198,7 +188,6 @@ const AddProductPage: React.FC = () => {
                 />
               </div>
             </div>
-            {/* Image Preview Slider*/}
             {images.length > 0 && (
               <div className="bg-background w-full flex flex-wrap gap-2 p-2 items-center justify-center">
                 {images.map((image, index) => (
@@ -220,7 +209,7 @@ const AddProductPage: React.FC = () => {
             )}
           </div>
         </div>
-        {/* Categories */}
+        {/* Categories section */}
         <div className="w-full bg-background_secondary p-2">
           <div className="w-full flex justify-between items-center">
             <p>Categories</p>
@@ -231,40 +220,25 @@ const AddProductPage: React.FC = () => {
               Add Categories
             </div>
           </div>
-          {categories.length > 0 && (
+          {productData.categories.length > 0 && (
             <div className="mt-2 bg-background p-2">
               <div className="flex flex-wrap gap-1.5 rounded-lg">
-                {categories.map((category_name, index) => (
-                  <div
-                    key={index}
-                    className="bg-blue-600 px-2 rounded-lg flex gap-1 items-center"
-                  >
-                    <p>{category_name}</p>
-                    <X
-                      size={14}
-                      className="cursor-pointer"
-                      onClick={() => handleDeleteCategory(category_name)}
-                    />
-                  </div>
+                {productData.categories.map((category, index) => (
+                  <div key={index}>{category.name}</div>
                 ))}
               </div>
             </div>
           )}
         </div>
-        {/* Tags */}
+        {/* Tags section */}
         <div className="w-full bg-background_secondary p-2">
           <p className="mb-2">Tags</p>
-          <TagInput tags={tags} setTags={setTags} />
-        </div>
-        {/* Product Action */}
-        <div
-          onClick={handleSubmit}
-          className="cursor-pointer w-full py-1 bg-white text-black text-center rounded-lg"
-        >
-          Create Product
-        </div>
-        <div className="cursor-pointer w-full py-1 bg-blue-500 text-black text-center rounded-lg">
-          Save Draft
+          <TagInput
+            tags={productData.tags}
+            setTags={(newTags) =>
+              setProductData((prevData) => ({ ...prevData, tags: newTags }))
+            }
+          />
         </div>
       </div>
       <div className="w-[60%]">
@@ -304,6 +278,8 @@ const AddProductPage: React.FC = () => {
         onClose={() => setIsCategoryModalOpen(false)}
         onSelectCategories={handleSelectCategories}
       />
+
+      <Button onClick={handleSubmit}>Create Product</Button>
     </div>
   );
 };

@@ -19,7 +19,7 @@ interface Category {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSelectCategories: (categories: Category[]) => void;
+  onSelectCategories: (categories: string[]) => void;
 }
 
 const CategoriesSelectedDialog: React.FC<Props> = ({
@@ -28,7 +28,7 @@ const CategoriesSelectedDialog: React.FC<Props> = ({
   onSelectCategories,
 }) => {
   const [rootCategories, setRootCategories] = useState<Category[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<
     Record<string, Category[] | null>
   >({});
@@ -79,18 +79,18 @@ const CategoriesSelectedDialog: React.FC<Props> = ({
 
   const handleCategorySelect = (category: Category) => {
     setSelectedCategories((prev) => {
-      const isSelected = prev.some((c) => c._id === category._id);
+      const isSelected = prev.includes(category.name);
       if (isSelected) {
-        return prev.filter((c) => c._id !== category._id);
+        return prev.filter((name) => name !== category.name);
       } else {
-        return [...prev, category];
+        return [...prev, category.name];
       }
     });
   };
 
   const renderCategory = (category: Category, depth = 0) => {
     const isExpanded = expandedCategories[category._id];
-    const isSelected = selectedCategories.some((c) => c._id === category._id);
+    const isSelected = selectedCategories.includes(category.name);
 
     return (
       <div key={category._id}>
