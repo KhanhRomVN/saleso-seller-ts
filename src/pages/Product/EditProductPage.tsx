@@ -124,7 +124,7 @@ const EditProductPage: React.FC = () => {
     setImageDialogOpen(true);
   };
 
-  const handleCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
+  const handleCropComplete = (croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   };
 
