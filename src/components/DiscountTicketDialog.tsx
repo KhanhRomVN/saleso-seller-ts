@@ -48,15 +48,27 @@ interface Product {
   upcoming_discounts: string[];
 }
 
-const DiscountTicketDialog: React.FC<{
+interface DiscountTicketDialogProps {
   discount_id: string;
   isOpen: boolean;
   onClose: () => void;
-}> = ({ discount_id, isOpen, onClose }) => {
+}
+
+const DiscountTicketDialog: React.FC<DiscountTicketDialogProps> = ({
+  discount_id,
+  isOpen,
+  onClose,
+}) => {
   const [discount, setDiscount] = useState<Discount | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      onClose();
+    }
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,8 +77,8 @@ const DiscountTicketDialog: React.FC<{
       try {
         setLoading(true);
         const [discountResponse, productsResponse] = await Promise.all([
-          axios.get(`http://localhost:8080/discount/${discount_id}`),
-          axios.get(
+          axios.get<Discount>(`http://localhost:8080/discount/${discount_id}`),
+          axios.get<Product[]>(
             `http://localhost:8080/product/by-seller/${
               JSON.parse(localStorage.getItem("currentUser") || "{}").user_id
             }`
@@ -77,7 +89,10 @@ const DiscountTicketDialog: React.FC<{
         setProducts(productsResponse.data);
         setError(null);
       } catch (err) {
-        setError("Failed to fetch data: " + err);
+        setError(
+          "Failed to fetch data: " +
+            (err instanceof Error ? err.message : String(err))
+        );
       } finally {
         setLoading(false);
       }
@@ -159,7 +174,11 @@ const DiscountTicketDialog: React.FC<{
           </div>
           <div className="grid grid-cols-2 items-center gap-4">
             <span className="font-semibold">Active:</span>
-            <Badge variant={discount.isActive ? "success" : "destructive"}>
+            <Badge
+              variant={
+                discount.status === "expired" ? "destructive" : "default"
+              }
+            >
               {discount.isActive ? "Yes" : "No"}
             </Badge>
           </div>
@@ -167,7 +186,7 @@ const DiscountTicketDialog: React.FC<{
             <span className="font-semibold">Status:</span>
             <Badge
               variant={
-                discount.status === "expired" ? "destructive" : "success"
+                discount.status === "expired" ? "destructive" : "default"
               }
             >
               {discount.status}
@@ -210,7 +229,7 @@ const DiscountTicketDialog: React.FC<{
                     variant={
                       getDiscountStatus(product) === "Not Applied"
                         ? "secondary"
-                        : "primary"
+                        : "default"
                     }
                   >
                     {getDiscountStatus(product)}

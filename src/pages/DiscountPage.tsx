@@ -12,7 +12,7 @@ import {
 import DiscountTicket from "@/components/DiscountTicket";
 
 interface Discount {
-  id: string;
+  _id: string;
   name: string;
   code: string;
   type: "percentage" | "fixed" | "flash-sale" | "buy_x_get_y";
