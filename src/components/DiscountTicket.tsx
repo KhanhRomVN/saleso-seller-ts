@@ -3,7 +3,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Tag } from "lucide-react";
+import { Tag, Calendar, Clock } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import DiscountTicketDialog from "./DiscountTicketDialog";
 
@@ -104,7 +104,7 @@ const DiscountTicket: React.FC<DiscountTicketProps> = ({ discount }) => {
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Card
-          className={`hover:cursor-pointer ${getBgColor()} text-white transition-colors duration-300 ease-in-out transform hover:scale-105`}
+          className={`hover:cursor-pointer ${getBgColor()} text-white transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg`}
           onClick={() => setIsDialogOpen(true)}
         >
           <CardHeader className="p-4">
@@ -117,25 +117,26 @@ const DiscountTicket: React.FC<DiscountTicketProps> = ({ discount }) => {
             <h3 className="text-lg font-semibold">{discount.name}</h3>
           </CardHeader>
           <CardContent className="p-4">
-            <p className="text-sm text-gray-300 mb-1 font-medium">
-              {renderValue()}
-            </p>
+            <p className="text-xl font-bold mb-2">{renderValue()}</p>
             <p className="text-sm text-gray-300 mb-2">
               {discount.isActive ? "Active" : "Inactive"}
             </p>
-            <Separator className="my-2 bg-gray-600" />
+            <Separator className="my-3 bg-gray-600" />
             <div className="space-y-2">
-              <p className="text-xs text-gray-400">
-                {formatDate(discount.startDate)} -{" "}
-                {formatDate(discount.endDate)}
-                {discount.type === "flash-sale" && (
-                  <>
-                    {" "}
-                    {formatTime(discount.startDate)} -{" "}
-                    {formatTime(discount.endDate)}
-                  </>
-                )}
-              </p>
+              <div className="flex items-center text-xs text-gray-400">
+                <Calendar className="w-4 h-4 mr-1" />
+                <span>
+                  {formatDate(discount.startDate)} -{" "}
+                  {formatDate(discount.endDate)}
+                </span>
+              </div>
+              <div className="flex items-center text-xs text-gray-400">
+                <Clock className="w-4 h-4 mr-1" />
+                <span>
+                  {formatTime(discount.startDate)} -{" "}
+                  {formatTime(discount.endDate)}
+                </span>
+              </div>
               <Progress value={Math.round(usagePercentage)} className="h-2" />
               <p className="text-xs text-gray-400">
                 {Math.round(usagePercentage)}% used

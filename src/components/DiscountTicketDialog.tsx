@@ -1,259 +1,147 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import ProductTable from "./ProductTable";
 
-interface Discount {
-  _id: string;
-  name: string;
-  code: string;
-  type: string;
-  value: number;
-  startDate: string;
-  endDate: string;
-  minimumPurchase: number;
-  maxUses: number;
-  customerUsageLimit: number;
-  isActive: boolean;
-  status: string;
-}
-
-interface Product {
-  _id: string;
-  name: string;
-  images: string[];
-  price?: number;
-  attributes?: {
-    [key: string]: Array<{ value: string; quantity: string; price: string }>;
-  };
-  units_sold: number;
-  expired_discounts: string[];
-  ongoing_discounts: string[];
-  upcoming_discounts: string[];
-}
-
-interface DiscountTicketDialogProps {
-  discount_id: string;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const DiscountTicketDialog: React.FC<DiscountTicketDialogProps> = ({
-  discount_id,
-  isOpen,
-  onClose,
-}) => {
-  const [discount, setDiscount] = useState<Discount | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const DiscountTicketDialog = ({ discount_id, isOpen, onClose }) => {
+  const [discountData, setDiscountData] = useState(null);
+  const [listProduct, setListProduct] = useState([]);
 
   useEffect(() => {
-    if (!isOpen) {
-      onClose();
+    if (isOpen) {
+      fetchDiscountData();
+      fetchProducts();
     }
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!isOpen) return;
-
-      try {
-        setLoading(true);
-        const [discountResponse, productsResponse] = await Promise.all([
-          axios.get<Discount>(`http://localhost:8080/discount/${discount_id}`),
-          axios.get<Product[]>(
-            `http://localhost:8080/product/by-seller/${
-              JSON.parse(localStorage.getItem("currentUser") || "{}").user_id
-            }`
-          ),
-        ]);
-
-        setDiscount(discountResponse.data);
-        setProducts(productsResponse.data);
-        setError(null);
-      } catch (err) {
-        setError(
-          "Failed to fetch data: " +
-            (err instanceof Error ? err.message : String(err))
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [discount_id, isOpen]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  const getMinPrice = (product: Product) => {
-    if (product.price) return product.price;
-    if (product.attributes) {
-      const prices = Object.values(product.attributes).flatMap((attr) =>
-        attr.map((item) => parseFloat(item.price))
+  const fetchDiscountData = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/discount/${discount_id}`
       );
-      return Math.min(...prices);
+      setDiscountData(response.data);
+    } catch (error) {
+      console.error("Error fetching discount data:", error);
     }
-    return 0;
   };
 
-  const getDiscountStatus = (product: Product) => {
-    if (product.ongoing_discounts.includes(discount_id)) return "Ongoing";
-    if (product.upcoming_discounts.includes(discount_id)) return "Upcoming";
-    if (product.expired_discounts.includes(discount_id)) return "Expired";
-    return "Not Applied";
+  const fetchProducts = async () => {
+    try {
+      const seller_id = localStorage.getItem("seller_id");
+      const response = await axios.get(
+        `http://localhost:8080/product/by-seller/${seller_id}`
+      );
+      setListProduct(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
   };
 
-  const filteredProducts = products.filter(
-    (product) => getMinPrice(product) > (discount?.minimumPurchase || 0)
-  );
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setDiscountData({ ...discountData, [name]: value });
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      await axios.put(
+        `http://localhost:8080/discount/${discount_id}`,
+        discountData
+      );
+      alert("Discount updated successfully");
+    } catch (error) {
+      console.error("Error updating discount:", error);
+      alert("Failed to update discount");
+    }
+  };
+
+  const handleApplyProduct = async (productId) => {
+    try {
+      await axios.post(`http://localhost:8080/discount/${discount_id}/apply`, {
+        productId,
+      });
+      alert("Product applied to discount successfully");
+      fetchProducts();
+    } catch (error) {
+      console.error("Error applying product to discount:", error);
+      alert("Failed to apply product to discount");
+    }
+  };
+
+  const handleCancelProduct = async (productId) => {
+    try {
+      await axios.post(`http://localhost:8080/discount/${discount_id}/cancel`, {
+        productId,
+      });
+      alert("Product removed from discount successfully");
+      fetchProducts();
+    } catch (error) {
+      console.error("Error removing product from discount:", error);
+      alert("Failed to remove product from discount");
+    }
+  };
+
+  if (!discountData) return null;
+
+  const columns = [
+    { key: "name", header: "Product Name" },
+    { key: "price", header: "Price" },
+    { key: "stock", header: "Stock" },
+    { key: "is_active", header: "Status" },
+    { key: "actions", header: "Actions" },
+  ];
+
+  const actions = [
+    { label: "Apply Product", onClick: handleApplyProduct },
+    { label: "Cancel Product", onClick: handleCancelProduct },
+  ];
 
   return (
-    <div className="flex flex-col max-w-4xl mx-auto">
-      <DialogHeader>
-        <DialogTitle>Discount Details</DialogTitle>
-      </DialogHeader>
-      {loading && <p className="text-center">Loading...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
-      {discount && (
-        <div className="grid gap-4">
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Name:</span>
-            <span>{discount.name}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Code:</span>
-            <span>{discount.code}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Type:</span>
-            <span>{discount.type}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Value:</span>
-            <span>{discount.value}%</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Start Date:</span>
-            <span>{formatDate(discount.startDate)}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">End Date:</span>
-            <span>{formatDate(discount.endDate)}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Minimum Purchase:</span>
-            <span>${discount.minimumPurchase}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Max Uses:</span>
-            <span>{discount.maxUses}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Usage Limit per Customer:</span>
-            <span>{discount.customerUsageLimit}</span>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Active:</span>
-            <Badge
-              variant={
-                discount.status === "expired" ? "destructive" : "default"
-              }
-            >
-              {discount.isActive ? "Yes" : "No"}
-            </Badge>
-          </div>
-          <div className="grid grid-cols-2 items-center gap-4">
-            <span className="font-semibold">Status:</span>
-            <Badge
-              variant={
-                discount.status === "expired" ? "destructive" : "default"
-              }
-            >
-              {discount.status}
-            </Badge>
-          </div>
-        </div>
-      )}
+    <Tabs defaultValue="discountData">
+      <TabsList>
+        <TabsTrigger value="discountData">Discount Data</TabsTrigger>
+        <TabsTrigger value="applyProduct">Apply Product</TabsTrigger>
+        <TabsTrigger value="analytic">Analytic</TabsTrigger>
+      </TabsList>
 
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold mb-4">Eligible Products</h3>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>STT</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Units Sold</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredProducts.map((product, index) => (
-              <TableRow key={product._id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="w-10 h-10 object-cover rounded"
-                    />
-                    <span>{product.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>${getMinPrice(product).toFixed(2)}</TableCell>
-                <TableCell>{product.units_sold}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      getDiscountStatus(product) === "Not Applied"
-                        ? "secondary"
-                        : "default"
-                    }
-                  >
-                    {getDiscountStatus(product)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Apply Discount</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+      <TabsContent value="discountData">
+        {Object.entries(discountData).map(([key, value]) => {
+          if (key !== "_id" && key !== "seller_id") {
+            return (
+              <div key={key} className="mb-4">
+                <Label htmlFor={key}>{key}</Label>
+                <Input
+                  id={key}
+                  name={key}
+                  value={value}
+                  onChange={handleInputChange}
+                />
+              </div>
+            );
+          }
+          return null;
+        })}
+        <Button onClick={handleSaveChanges}>Save Changes</Button>
+      </TabsContent>
+
+      <TabsContent value="applyProduct">
+        <ProductTable
+          columns={columns}
+          apiEndpoint={`http://localhost:8080/product/by-seller/${localStorage.getItem(
+            "seller_id"
+          )}`}
+          actions={actions}
+        />
+      </TabsContent>
+
+      <TabsContent value="analytic">
+        {/* Analytic content will be added here in the future */}
+        <p>Analytic data will be displayed here.</p>
+      </TabsContent>
+    </Tabs>
   );
 };
 
