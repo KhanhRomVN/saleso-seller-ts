@@ -1,25 +1,52 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import ProductTable from "./ProductTable";
+import ProductTable from "../product/ProductTable";
+import DiscountDetail from "./DiscountDetail";
 
-const DiscountTicketDialog = ({ discount_id, isOpen, onClose }) => {
-  const [discountData, setDiscountData] = useState(null);
-  const [listProduct, setListProduct] = useState([]);
+interface DiscountValue {
+  buyQuantity: number;
+  getFreeQuantity: number;
+}
+
+interface Discount {
+  _id: string;
+  name: string;
+  code: string;
+  type: "percentage" | "fixed" | "flash-sale" | "buy_x_get_y";
+  value: number | DiscountValue;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  currentUses?: number;
+  maxUses?: number;
+  applicableProducts?: string[];
+  minimumPurchase?: number;
+  customerUsageLimit?: number;
+}
+
+interface DiscountTicketDialogProps {
+  discount_id: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const DiscountTicketDialog: React.FC<DiscountTicketDialogProps> = ({
+  discount_id,
+  isOpen,
+}) => {
+  const [discountData, setDiscountData] = useState<Discount | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       fetchDiscountData();
-      fetchProducts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const fetchDiscountData = async () => {
     try {
-      const response = await axios.get(
+      const response = await axios.get<Discount>(
         `http://localhost:8080/discount/${discount_id}`
       );
       setDiscountData(response.data);
@@ -28,24 +55,26 @@ const DiscountTicketDialog = ({ discount_id, isOpen, onClose }) => {
     }
   };
 
-  const fetchProducts = async () => {
-    try {
-      const seller_id = localStorage.getItem("seller_id");
-      const response = await axios.get(
-        `http://localhost:8080/product/by-seller/${seller_id}`
-      );
-      setListProduct(response.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    if (!discountData) return;
+
+    if (name === "value" && discountData.type === "buy_x_get_y") {
+      try {
+        const parsedValue = JSON.parse(value);
+        setDiscountData({ ...discountData, [name]: parsedValue });
+      } catch (error) {
+        console.error("Invalid JSON for buy_x_get_y value", error);
+      }
+    } else if (type === "checkbox") {
+      setDiscountData({ ...discountData, [name]: checked });
+    } else {
+      setDiscountData({ ...discountData, [name]: value });
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setDiscountData({ ...discountData, [name]: value });
-  };
-
   const handleSaveChanges = async () => {
+    if (!discountData) return;
     try {
       await axios.put(
         `http://localhost:8080/discount/${discount_id}`,
@@ -58,26 +87,30 @@ const DiscountTicketDialog = ({ discount_id, isOpen, onClose }) => {
     }
   };
 
-  const handleApplyProduct = async (productId) => {
+  const handleApplyProduct = async (productId: string) => {
+    const accessToken = localStorage.getItem("accessToken");
     try {
-      await axios.post(`http://localhost:8080/discount/${discount_id}/apply`, {
-        productId,
-      });
+      await axios.post(
+        `http://localhost:8080/discount/apply`,
+        {
+          discountId: discount_id,
+          productId,
+        },
+        { headers: { accessToken } }
+      );
       alert("Product applied to discount successfully");
-      fetchProducts();
     } catch (error) {
       console.error("Error applying product to discount:", error);
       alert("Failed to apply product to discount");
     }
   };
 
-  const handleCancelProduct = async (productId) => {
+  const handleCancelProduct = async (productId: string) => {
     try {
       await axios.post(`http://localhost:8080/discount/${discount_id}/cancel`, {
         productId,
       });
       alert("Product removed from discount successfully");
-      fetchProducts();
     } catch (error) {
       console.error("Error removing product from discount:", error);
       alert("Failed to remove product from discount");
@@ -91,6 +124,7 @@ const DiscountTicketDialog = ({ discount_id, isOpen, onClose }) => {
     { key: "price", header: "Price" },
     { key: "stock", header: "Stock" },
     { key: "is_active", header: "Status" },
+    { key: "apply", header: "Apply" },
     { key: "actions", header: "Actions" },
   ];
 
@@ -108,37 +142,22 @@ const DiscountTicketDialog = ({ discount_id, isOpen, onClose }) => {
       </TabsList>
 
       <TabsContent value="discountData">
-        {Object.entries(discountData).map(([key, value]) => {
-          if (key !== "_id" && key !== "seller_id") {
-            return (
-              <div key={key} className="mb-4">
-                <Label htmlFor={key}>{key}</Label>
-                <Input
-                  id={key}
-                  name={key}
-                  value={value}
-                  onChange={handleInputChange}
-                />
-              </div>
-            );
-          }
-          return null;
-        })}
-        <Button onClick={handleSaveChanges}>Save Changes</Button>
+        <DiscountDetail
+          discountData={discountData}
+          handleInputChange={handleInputChange}
+          handleSaveChanges={handleSaveChanges}
+        />
       </TabsContent>
 
       <TabsContent value="applyProduct">
         <ProductTable
           columns={columns}
-          apiEndpoint={`http://localhost:8080/product/by-seller/${localStorage.getItem(
-            "seller_id"
-          )}`}
           actions={actions}
+          discount_id={discountData._id}
         />
       </TabsContent>
 
       <TabsContent value="analytic">
-        {/* Analytic content will be added here in the future */}
         <p>Analytic data will be displayed here.</p>
       </TabsContent>
     </Tabs>

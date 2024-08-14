@@ -32,6 +32,7 @@ interface DiscountData {
   endDate: Date;
   minimumPurchase: number;
   maxUses: number;
+  applicableProducts: string[];
   customerUsageLimit: number;
 }
 
@@ -55,6 +56,7 @@ const DiscountCreatedDialog: React.FC<DiscountCreatedDialogProps> = ({
     endDate: new Date(),
     minimumPurchase: 0,
     maxUses: 0,
+    applicableProducts: [],
     customerUsageLimit: 1,
   });
 

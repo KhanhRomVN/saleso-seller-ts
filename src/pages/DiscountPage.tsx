@@ -9,10 +9,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import DiscountTicket from "@/components/DiscountTicket";
+import DiscountTicket from "@/components/discount/DiscountTicket";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import DiscountCreatedDialog from "@/components/DiscountCreatedDialog";
+import DiscountCreatedDialog from "@/components/discount/DiscountCreatedDialog";
 
 interface Discount {
   _id: string;
@@ -28,7 +28,8 @@ interface Discount {
   customerUsageLimit: number;
   seller_id: string;
   status: "upcoming" | "ongoing" | "expired";
-  isActive?: boolean;
+  isActive: boolean;
+  currentUses?: number;
 }
 
 interface DiscountData {
@@ -81,7 +82,7 @@ const DiscountPage: React.FC = () => {
         case "Active":
           return discount.isActive;
         case "Non-active":
-          return discount.isActive === false;
+          return !discount.isActive;
         case "Percentage":
         case "Fixed":
           return discount.type.toLowerCase() === filter.toLowerCase();
@@ -115,9 +116,7 @@ const DiscountPage: React.FC = () => {
   );
 
   const handleCreateDiscount = (discountData: DiscountData) => {
-    // Implement the logic to create a new discount
     console.log("Creating discount:", discountData);
-    // Close the dialog after creating the discount
     setIsDialogOpen(false);
   };
 

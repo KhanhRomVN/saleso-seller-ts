@@ -1,12 +1,40 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import ProductTable from "@/components/ProductTable";
+import ProductTable from "@/components/product/ProductTable";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 
+interface Product {
+  _id: string;
+  name: string;
+  images: string[];
+  price?: number;
+  attributes?: Attribute[];
+  countryOfOrigin: string;
+  stock?: number;
+  units_sold: number;
+  is_active: string;
+  upcoming_discounts: string[];
+  ongoing_discounts: string[];
+  expired_discounts: string[];
+}
+
+interface Attribute {
+  attributes_value: string;
+  attributes_quantity: number;
+  attributes_price: number;
+}
+
+interface Column {
+  key: keyof Product | "actions" | "apply";
+  header: string;
+  sortable?: boolean;
+  render?: (product: Product) => React.ReactNode;
+}
+
 const ProductManagementPage: React.FC = () => {
   const navigate = useNavigate();
-  const columns = [
+  const columns: Column[] = [
     { key: "name", header: "Name" },
     { key: "price", header: "Price" },
     { key: "countryOfOrigin", header: "Country" },
@@ -41,14 +69,16 @@ const ProductManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-2">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Product Management</h1>
         <Button onClick={handleAddProduct}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
         </Button>
       </div>
-      <ProductTable columns={columns} actions={actions} />
+      <div className="bg-background_secondary rounded-lg">
+        <ProductTable columns={columns} actions={actions} />
+      </div>
     </div>
   );
 };

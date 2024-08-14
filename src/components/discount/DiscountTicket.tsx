@@ -52,11 +52,7 @@ const StatusTag: React.FC<{ status: string }> = ({ status }) => {
 const DiscountTicket: React.FC<DiscountTicketProps> = ({ discount }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const renderValue = () => {
-    if (
-      discount.type === "percentage" ||
-      discount.type === "fixed" ||
-      discount.type === "flash-sale"
-    ) {
+    if (discount.type === "percentage" || discount.type === "fixed") {
       return `Discount ${discount.value}${
         discount.type === "percentage" ? "%" : "$"
       }`;
@@ -65,6 +61,8 @@ const DiscountTicket: React.FC<DiscountTicketProps> = ({ discount }) => {
       typeof discount.value === "object"
     ) {
       return `Buy ${discount.value.buyQuantity} get ${discount.value.getFreeQuantity}`;
+    } else if (discount.type === "flash-sale") {
+      return `Flashsale ${discount.value}%`;
     }
     return "";
   };
