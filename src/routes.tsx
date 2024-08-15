@@ -1,17 +1,8 @@
-// Public Page
-import HomePage from "@/pages/HomePage";
-
-// Auth Page
 import EmailPage from "./pages/RegisterPage";
 import LoginPage from "@/pages/LoginPage";
+import HomePage from "@/pages/HomePage";
+import ProductPage from "./pages/ProductPage";
 
-// Product Page
-import AddProductPage from "./pages/Product/AddProductPage";
-import EditProductPage from "./pages/Product/EditProductPage";
-import ProductManagementPage from "./pages/Product/ProductManagementPage";
-
-// Discount
-import DiscountPage from "@/pages/DiscountPage";
 // Layout Component
 import DefaultLayout from "@/layout/defaultLayout";
 
@@ -33,34 +24,10 @@ const publicRoutes = [
     ),
   },
   {
-    path: "/discount",
+    path: "/product/:product_id",
     element: (
       <DefaultLayout>
-        <DiscountPage />
-      </DefaultLayout>
-    ),
-  },
-  {
-    path: "/product/management",
-    element: (
-      <DefaultLayout>
-        <ProductManagementPage />
-      </DefaultLayout>
-    ),
-  },
-  {
-    path: "/product/add",
-    element: (
-      <DefaultLayout>
-        <AddProductPage />
-      </DefaultLayout>
-    ),
-  },
-  {
-    path: "/product/edit/:product_id",
-    element: (
-      <DefaultLayout>
-        <EditProductPage />
+        <ProductPage />
       </DefaultLayout>
     ),
   },
