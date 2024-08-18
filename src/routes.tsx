@@ -1,8 +1,21 @@
+// Public Page
+import HomePage from "@/pages/HomePage";
+
+// Auth Page
 import EmailPage from "./pages/RegisterPage";
 import LoginPage from "@/pages/LoginPage";
-import HomePage from "@/pages/HomePage";
-import ProductPage from "./pages/ProductPage";
 
+// Product Page
+import AddProductPage from "./pages/Product/AddProductPage";
+import EditProductPage from "./pages/Product/EditProductPage";
+import ProductManagementPage from "./pages/Product/ProductManagementPage";
+
+// Invoice Page
+import InvoiceManagementPage from "./pages/Invoice/InvoiceManagementPage";
+import CreateInvoice from "./pages/Invoice/CreateInvoice";
+
+// Discount
+import DiscountPage from "@/pages/DiscountPage";
 // Layout Component
 import DefaultLayout from "@/layout/defaultLayout";
 
@@ -24,10 +37,50 @@ const publicRoutes = [
     ),
   },
   {
-    path: "/product/:product_id",
+    path: "/discount",
     element: (
       <DefaultLayout>
-        <ProductPage />
+        <DiscountPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/product/management",
+    element: (
+      <DefaultLayout>
+        <ProductManagementPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/product/add",
+    element: (
+      <DefaultLayout>
+        <AddProductPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/product/edit/:product_id",
+    element: (
+      <DefaultLayout>
+        <EditProductPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/invoice/management",
+    element: (
+      <DefaultLayout>
+        <InvoiceManagementPage />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/invoice/create/:order_id",
+    element: (
+      <DefaultLayout>
+        <CreateInvoice />
       </DefaultLayout>
     ),
   },
