@@ -1,14 +1,12 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PendingOrder from "./PendingOrder";
-import ProgressInvoice from "./ProgressInvoice";
-import SuccessInvoice from "./SuccessInvoice";
-import FailureInvoice from "./FailureInvoice";
+import InvoiceList from "./InvoiceList";
 
 const InvoiceManagementPage: React.FC = () => {
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Invoice Management</h1>
+    <div className="container mx-auto p-2">
+      <p className="text-gray-500 mb-6">Invoice Management</p>
       <Tabs defaultValue="pending">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pending">Pending Order</TabsTrigger>
@@ -20,13 +18,13 @@ const InvoiceManagementPage: React.FC = () => {
           <PendingOrder />
         </TabsContent>
         <TabsContent value="progress">
-          <ProgressInvoice />
+          <InvoiceList status="progress" />
         </TabsContent>
         <TabsContent value="success">
-          <SuccessInvoice />
+          <InvoiceList status="success" />
         </TabsContent>
         <TabsContent value="failure">
-          <FailureInvoice />
+          <InvoiceList status="failure" />
         </TabsContent>
       </Tabs>
     </div>

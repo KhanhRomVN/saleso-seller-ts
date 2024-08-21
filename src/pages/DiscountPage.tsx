@@ -11,8 +11,11 @@ import {
 } from "@/components/ui/carousel";
 import DiscountTicket from "@/components/discount/DiscountTicket";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import DiscountCreatedDialog from "@/components/discount/DiscountCreatedDialog";
+import { motion } from "framer-motion";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Discount {
   _id: string;
@@ -96,17 +99,28 @@ const DiscountPage: React.FC = () => {
     });
   };
 
+  const handleCreateDiscount = (discountData: DiscountData) => {
+    console.log("Creating discount:", discountData);
+    setIsDialogOpen(false);
+    toast.success("Discount created successfully!");
+  };
+
   const renderDiscountSlider = (filteredDiscounts: Discount[]) => (
     <Carousel className="w-full">
       <CarouselContent>
-        {filteredDiscounts.map((discount) => (
+        {filteredDiscounts.map((discount, index) => (
           <CarouselItem
             key={discount._id}
             className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
           >
-            <div className="p-1">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="p-1"
+            >
               <DiscountTicket discount={discount} onSelect={() => {}} />
-            </div>
+            </motion.div>
           </CarouselItem>
         ))}
       </CarouselContent>
@@ -114,11 +128,6 @@ const DiscountPage: React.FC = () => {
       <CarouselNext />
     </Carousel>
   );
-
-  const handleCreateDiscount = (discountData: DiscountData) => {
-    console.log("Creating discount:", discountData);
-    setIsDialogOpen(false);
-  };
 
   const tabItems = [
     "All",
@@ -135,16 +144,21 @@ const DiscountPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex justify-between items-center mb-6"
+      >
         <h1 className="text-3xl font-bold">Discount Management</h1>
         <Button
           className="flex items-center gap-2"
           onClick={() => setIsDialogOpen(true)}
         >
-          <Plus size={20} />
+          <PlusCircle size={20} />
           Create New Discount
         </Button>
-      </div>
+      </motion.div>
       {loading && <p className="text-center">Loading discounts...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
       {!loading && !error && (
@@ -172,6 +186,7 @@ const DiscountPage: React.FC = () => {
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleCreateDiscount}
       />
+      <ToastContainer position="bottom-right" />
     </div>
   );
 };

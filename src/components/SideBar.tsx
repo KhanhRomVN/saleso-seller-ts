@@ -48,11 +48,6 @@ const menuItems = [
     category: "Transaction",
     items: [
       {
-        text: "Payment",
-        path: "/payment",
-        icon: <CreditCard className="h-4 w-4" />,
-      },
-      {
         text: "Refunds",
         path: "/refunds",
         icon: <RefreshCcw className="h-4 w-4" />,
@@ -72,11 +67,6 @@ const menuItems = [
   {
     category: "General",
     items: [
-      {
-        text: "Notification",
-        path: "/notification",
-        icon: <Bell className="h-4 w-4" />,
-      },
       {
         text: "Feedback",
         path: "/feedback",

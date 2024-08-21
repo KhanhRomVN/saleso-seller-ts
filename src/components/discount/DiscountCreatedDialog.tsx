@@ -22,6 +22,9 @@ import axios from "axios";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Percent, DollarSign, Gift, Zap, Calendar } from "lucide-react";
 
 interface DiscountData {
   name: string;
@@ -120,8 +123,6 @@ const DiscountCreatedDialog: React.FC<DiscountCreatedDialogProps> = ({
         throw new Error("Access token not found");
       }
 
-      console.log(discountData);
-
       const response = await axios.post(
         "http://localhost:8080/discount/create",
         discountData,
@@ -133,253 +134,327 @@ const DiscountCreatedDialog: React.FC<DiscountCreatedDialogProps> = ({
       );
 
       console.log("Discount created successfully:", response.data);
+      toast.success("Discount created successfully!");
       onSubmit(discountData);
       onClose();
     } catch (error) {
       console.error("Error creating discount:", error);
+      toast.error("Error creating discount. Please try again.");
+    }
+  };
+
+  const getDiscountTypeIcon = (type: string) => {
+    switch (type) {
+      case "percentage":
+        return <Percent className="mr-2" />;
+      case "fixed":
+        return <DollarSign className="mr-2" />;
+      case "buy_x_get_y":
+        return <Gift className="mr-2" />;
+      case "flash-sale":
+        return <Zap className="mr-2" />;
+      default:
+        return null;
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">
-            Create New Discount
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <AnimatePresence>
-            {errors.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    <ul>
-                      {errors.map((error, index) => (
-                        <li key={index}>{error}</li>
-                      ))}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="conditions">Conditions</TabsTrigger>
-              <TabsTrigger value="limitations">Limitations</TabsTrigger>
-            </TabsList>
-            <TabsContent value="basic" className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Discount Name</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={discountData.name}
-                    onChange={handleInputChange}
-                    placeholder="Enter discount name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="code">Discount Code</Label>
-                  <Input
-                    id="code"
-                    name="code"
-                    value={discountData.code}
-                    onChange={handleInputChange}
-                    placeholder="Enter discount code"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="type">Discount Type</Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("type", value)}
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              Create New Discount
+            </DialogTitle>
+          </DialogHeader>
+          <motion.form
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AnimatePresence>
+              {errors.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select discount type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">Percentage</SelectItem>
-                    <SelectItem value="fixed">Fixed Amount</SelectItem>
-                    <SelectItem value="buy_x_get_y">
-                      Buy X Get Y Free
-                    </SelectItem>
-                    <SelectItem value="flash-sale">Flash Sale</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {discountData.type === "buy_x_get_y" ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="buyQuantity">Buy Quantity</Label>
-                    <Input
-                      id="buyQuantity"
-                      name="buyQuantity"
-                      type="number"
-                      value={
-                        (
-                          discountData.value as {
-                            buyQuantity: number;
-                            getFreeQuantity: number;
-                          }
-                        ).buyQuantity
-                      }
-                      onChange={(e) =>
-                        setDiscountData((prev) => ({
-                          ...prev,
-                          value: {
-                            ...(prev.value as {
-                              buyQuantity: number;
-                              getFreeQuantity: number;
-                            }),
-                            buyQuantity: Number(e.target.value),
-                          },
-                        }))
-                      }
-                      placeholder="Enter buy quantity"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="getFreeQuantity">Get Free Quantity</Label>
-                    <Input
-                      id="getFreeQuantity"
-                      name="getFreeQuantity"
-                      type="number"
-                      value={
-                        (
-                          discountData.value as {
-                            buyQuantity: number;
-                            getFreeQuantity: number;
-                          }
-                        ).getFreeQuantity
-                      }
-                      onChange={(e) =>
-                        setDiscountData((prev) => ({
-                          ...prev,
-                          value: {
-                            ...(prev.value as {
-                              buyQuantity: number;
-                              getFreeQuantity: number;
-                            }),
-                            getFreeQuantity: Number(e.target.value),
-                          },
-                        }))
-                      }
-                      placeholder="Enter free quantity"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="value">Discount Value</Label>
-                  <Input
-                    id="value"
-                    name="value"
-                    type="number"
-                    value={discountData.value as number}
-                    onChange={handleInputChange}
-                    placeholder={`Enter discount ${
-                      discountData.type === "percentage"
-                        ? "percentage"
-                        : "amount"
-                    }`}
-                    min={discountData.type === "flash-sale" ? 41 : 0}
-                    max={discountData.type === "flash-sale" ? 99 : undefined}
-                  />
-                </div>
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      <ul>
+                        {errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
               )}
-            </TabsContent>
-            <TabsContent value="conditions" className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <DatePicker
-                    id="startDate"
-                    selected={discountData.startDate}
-                    onChange={(date) => handleDateChange("startDate", date)}
-                    showTimeSelect
-                    timeFormat="HH:00"
-                    timeIntervals={60}
-                    timeCaption="Time"
-                    dateFormat="MMMM d, yyyy h:00 aa"
-                    className="w-full bg-background_secondary p-2 rounded-md"
-                    minDate={new Date()}
-                  />
-                </div>
-                {discountData.type !== "flash-sale" && (
+            </AnimatePresence>
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                <TabsTrigger value="conditions">Conditions</TabsTrigger>
+                <TabsTrigger value="limitations">Limitations</TabsTrigger>
+              </TabsList>
+              <TabsContent value="basic" className="space-y-4 mt-4">
+                <motion.div
+                  className="grid grid-cols-2 gap-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
                   <div className="space-y-2">
-                    <Label htmlFor="endDate">End Date</Label>
-                    <DatePicker
-                      id="endDate"
-                      selected={discountData.endDate}
-                      onChange={(date) => handleDateChange("endDate", date)}
-                      showTimeSelect
-                      timeFormat="HH:00"
-                      timeIntervals={60}
-                      timeCaption="Time"
-                      dateFormat="MMMM d, yyyy h:00 aa"
-                      className="w-full bg-background_secondary p-2 rounded-md"
-                      minDate={discountData.startDate}
+                    <Label htmlFor="name">Discount Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={discountData.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter discount name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="code">Discount Code</Label>
+                    <Input
+                      id="code"
+                      name="code"
+                      value={discountData.code}
+                      onChange={handleInputChange}
+                      placeholder="Enter discount code"
+                    />
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  className="space-y-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Label htmlFor="type">Discount Type</Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange("type", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select discount type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">
+                        {getDiscountTypeIcon("percentage")} Percentage
+                      </SelectItem>
+                      <SelectItem value="fixed">
+                        {getDiscountTypeIcon("fixed")} Fixed Amount
+                      </SelectItem>
+                      <SelectItem value="buy_x_get_y">
+                        {getDiscountTypeIcon("buy_x_get_y")} Buy X Get Y Free
+                      </SelectItem>
+                      <SelectItem value="flash-sale">
+                        {getDiscountTypeIcon("flash-sale")} Flash Sale
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </motion.div>
+
+                {discountData.type === "buy_x_get_y" ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="buyQuantity">Buy Quantity</Label>
+                      <Input
+                        id="buyQuantity"
+                        name="buyQuantity"
+                        type="number"
+                        value={
+                          (
+                            discountData.value as {
+                              buyQuantity: number;
+                              getFreeQuantity: number;
+                            }
+                          ).buyQuantity
+                        }
+                        onChange={(e) =>
+                          setDiscountData((prev) => ({
+                            ...prev,
+                            value: {
+                              ...(prev.value as {
+                                buyQuantity: number;
+                                getFreeQuantity: number;
+                              }),
+                              buyQuantity: Number(e.target.value),
+                            },
+                          }))
+                        }
+                        placeholder="Enter buy quantity"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="getFreeQuantity">Get Free Quantity</Label>
+                      <Input
+                        id="getFreeQuantity"
+                        name="getFreeQuantity"
+                        type="number"
+                        value={
+                          (
+                            discountData.value as {
+                              buyQuantity: number;
+                              getFreeQuantity: number;
+                            }
+                          ).getFreeQuantity
+                        }
+                        onChange={(e) =>
+                          setDiscountData((prev) => ({
+                            ...prev,
+                            value: {
+                              ...(prev.value as {
+                                buyQuantity: number;
+                                getFreeQuantity: number;
+                              }),
+                              getFreeQuantity: Number(e.target.value),
+                            },
+                          }))
+                        }
+                        placeholder="Enter free quantity"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="value">Discount Value</Label>
+                    <Input
+                      id="value"
+                      name="value"
+                      type="number"
+                      value={discountData.value as number}
+                      onChange={handleInputChange}
+                      placeholder={`Enter discount ${
+                        discountData.type === "percentage"
+                          ? "percentage"
+                          : "amount"
+                      }`}
+                      min={discountData.type === "flash-sale" ? 41 : 0}
+                      max={discountData.type === "flash-sale" ? 99 : undefined}
                     />
                   </div>
                 )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="minimumPurchase">Minimum Purchase</Label>
-                <Input
-                  id="minimumPurchase"
-                  name="minimumPurchase"
-                  type="number"
-                  value={discountData.minimumPurchase}
-                  onChange={handleInputChange}
-                  placeholder="Enter minimum purchase amount"
-                />
-              </div>
-            </TabsContent>
-            <TabsContent value="limitations" className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="maxUses">Maximum Uses</Label>
-                <Input
-                  id="maxUses"
-                  name="maxUses"
-                  type="number"
-                  value={discountData.maxUses}
-                  onChange={handleInputChange}
-                  placeholder="Enter maximum uses"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customerUsageLimit">Customer Usage Limit</Label>
-                <Input
-                  id="customerUsageLimit"
-                  name="customerUsageLimit"
-                  type="number"
-                  value={discountData.customerUsageLimit}
-                  onChange={handleInputChange}
-                  placeholder="Enter customer usage limit"
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+              <TabsContent value="conditions" className="space-y-4 mt-4">
+                <motion.div
+                  className="grid grid-cols-2 gap-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date</Label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <DatePicker
+                        id="startDate"
+                        selected={discountData.startDate}
+                        onChange={(date) => handleDateChange("startDate", date)}
+                        showTimeSelect
+                        timeFormat="HH:00"
+                        timeIntervals={60}
+                        timeCaption="Time"
+                        dateFormat="MMMM d, yyyy h:00 aa"
+                        className="w-full bg-background_secondary p-2 pl-10 rounded-md"
+                        minDate={new Date()}
+                      />
+                    </div>
+                  </div>
+                  {discountData.type !== "flash-sale" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">End Date</Label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <DatePicker
+                          id="endDate"
+                          selected={discountData.endDate}
+                          onChange={(date) => handleDateChange("endDate", date)}
+                          showTimeSelect
+                          timeFormat="HH:00"
+                          timeIntervals={60}
+                          timeCaption="Time"
+                          dateFormat="MMMM d, yyyy h:00 aa"
+                          className="w-full bg-background_secondary p-2 pl-10 rounded-md"
+                          minDate={discountData.startDate}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+                <motion.div
+                  className="space-y-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Label htmlFor="minimumPurchase">Minimum Purchase</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <Input
+                      id="minimumPurchase"
+                      name="minimumPurchase"
+                      type="number"
+                      value={discountData.minimumPurchase}
+                      onChange={handleInputChange}
+                      placeholder="Enter minimum purchase amount"
+                      className="pl-10"
+                    />
+                  </div>
+                </motion.div>
+              </TabsContent>
+              <TabsContent value="limitations" className="space-y-4 mt-4">
+                <motion.div
+                  className="space-y-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Label htmlFor="maxUses">Maximum Uses</Label>
+                  <Input
+                    id="maxUses"
+                    name="maxUses"
+                    type="number"
+                    value={discountData.maxUses}
+                    onChange={handleInputChange}
+                    placeholder="Enter maximum uses"
+                  />
+                </motion.div>
+                <motion.div
+                  className="space-y-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Label htmlFor="customerUsageLimit">
+                    Customer Usage Limit
+                  </Label>
+                  <Input
+                    id="customerUsageLimit"
+                    name="customerUsageLimit"
+                    type="number"
+                    value={discountData.customerUsageLimit}
+                    onChange={handleInputChange}
+                    placeholder="Enter customer usage limit"
+                  />
+                </motion.div>
+              </TabsContent>
+            </Tabs>
 
-          <DialogFooter>
-            <Button type="submit" className="w-full">
-              Create Discount
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter>
+              <Button type="submit" className="w-full">
+                Create Discount
+              </Button>
+            </DialogFooter>
+          </motion.form>
+        </DialogContent>
+      </Dialog>
+      <ToastContainer position="bottom-right" />
+    </>
   );
 };
 

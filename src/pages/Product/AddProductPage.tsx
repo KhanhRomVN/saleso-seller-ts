@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Cropper, { Area } from "react-easy-crop";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,18 @@ import {
   handleUploadCroppedImage,
 } from "@/utils/imageUtils";
 import CategoriesSelectedDialog from "@/components/CategoriesSelectedDialog";
-import { X } from "lucide-react";
+import {
+  X,
+  Upload,
+  Image,
+  Tag,
+  Crop,
+  SkipForward,
+  Check,
+  Save,
+  Hash,
+  Plus,
+} from "lucide-react";
 import ProductDetail from "../../components/product/ProductDetail";
 import { BACKEND_URI } from "@/api";
 import TagInput from "@/components/TagInput";
@@ -75,6 +87,13 @@ const AddProductPage: React.FC = () => {
   } | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 },
+    transition: { duration: 0.3 },
+  };
 
   const onCropComplete = useCallback(
     (croppedArea: Area, croppedAreaPixels: Area) => {
@@ -202,133 +221,211 @@ const AddProductPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-between gap-2">
-      <div className="w-[40%] flex flex-col  gap-2">
-        {/* Image */}
-        <div className="w-full bg-background_secondary p-2">
-          <p className="mb-2">Product Images</p>
-          <div className="w-full">
-            {/* Image Upload */}
-            <div className="bg-background w-full h-[140px] rounded-lg flex flex-col items-center justify-center mb-2">
-              <p>Upload Images</p>
-              <div className="flex gap-1 items-center">
-                <p>Drag photos here or</p>
-                <label
-                  htmlFor="file-upload"
-                  className="text-red-500 cursor-pointer"
-                >
-                  upload here
-                </label>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </div>
-            </div>
-            {/* Image Preview Slider*/}
+    <motion.div
+      className="flex justify-between gap-4 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div className="w-[40%] flex flex-col gap-4" {...fadeInUp}>
+        {/* Image Upload */}
+        <motion.div
+          className="bg-background_secondary p-4 rounded-lg shadow-md"
+          {...fadeInUp}
+        >
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <Image className="mr-2" size={24} />
+            Product Images
+          </h2>
+          <motion.div
+            className="bg-background w-full h-[140px] rounded-lg flex flex-col items-center justify-center mb-4 border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors duration-300"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Upload size={32} className="mb-2 text-gray-400" />
+            <p className="text-sm text-gray-600">Drag photos here or</p>
+            <label
+              htmlFor="file-upload"
+              className="text-blue-500 cursor-pointer hover:underline"
+            >
+              upload here
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </motion.div>
+          <AnimatePresence>
             {images.length > 0 && (
-              <div className="bg-background w-full flex flex-wrap gap-2 p-2 items-center justify-center">
+              <motion.div
+                className="bg-background w-full flex flex-wrap gap-2 p-2 items-center justify-start rounded-lg"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
                 {images.map((image, index) => (
-                  <div key={index} className="relative">
+                  <motion.div
+                    key={index}
+                    className="relative"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     <img
                       src={image}
                       alt={`Uploaded ${index}`}
                       className="w-24 h-24 object-cover rounded-md"
                     />
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={() => handleDeleteImage(index)}
                       className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2 hover:bg-red-600 focus:outline-none"
                     >
                       <X size={16} />
-                    </button>
-                  </div>
+                    </motion.button>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
-          </div>
-        </div>
+          </AnimatePresence>
+        </motion.div>
+
         {/* Categories */}
-        <div className="w-full bg-background_secondary p-2">
-          <div className="w-full flex justify-between items-center">
-            <p>Categories</p>
-            <div
+        <motion.div
+          className="bg-background_secondary p-4 rounded-lg shadow-md"
+          {...fadeInUp}
+        >
+          <div className="w-full flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <Tag className="mr-2" size={24} />
+              Categories
+            </h2>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setIsCategoryModalOpen(true)}
-              className="bg-red-500 p-1.5 cursor-pointer text-sm rounded-lg"
+              className="bg-blue-500 text-white p-2 rounded-lg text-sm flex items-center"
             >
+              <Plus size={16} className="mr-1" />
               Add Categories
-            </div>
+            </motion.button>
           </div>
-          {categories.length > 0 && (
-            <div className="mt-2 bg-background p-2">
-              <div className="flex flex-wrap gap-1.5 rounded-lg">
-                {categories.map((category, index) => (
-                  <div
-                    key={index}
-                    className="bg-blue-600 px-2 rounded-lg flex gap-1 items-center"
-                  >
-                    <p>{category.name}</p>
-                    <X
-                      size={14}
-                      className="cursor-pointer"
-                      onClick={() => handleDeleteCategory(category)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          <AnimatePresence>
+            {categories.length > 0 && (
+              <motion.div
+                className="bg-background p-2 rounded-lg"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((category, index) => (
+                    <motion.div
+                      key={index}
+                      className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <span className="mr-1">{category.name}</span>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleDeleteCategory(category)}
+                        className="text-blue-800 focus:outline-none"
+                      >
+                        <X size={14} />
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
         {/* Tags */}
-        <div className="w-full bg-background_secondary p-2">
-          <p className="mb-2">Tags</p>
+        <motion.div
+          className="bg-background_secondary p-4 rounded-lg shadow-md"
+          {...fadeInUp}
+        >
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <Hash className="mr-2" size={24} />
+            Tags
+          </h2>
           <TagInput tags={tags} setTags={setTags} />
-        </div>
-        {/* Product Action */}
-        <div className="flex justify-around w-full gap-2.5">
-          <div
-            className="cursor-pointer w-full py-1 bg-red-500 text-black text-center rounded-lg"
+        </motion.div>
+
+        {/* Product Actions */}
+        <motion.div
+          className="flex justify-around w-full gap-4 mt-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex-1 py-2 bg-red-500 text-white text-center rounded-lg flex items-center justify-center"
             onClick={() => {
-              toast({
-                description: "Action cancelled",
-              });
+              toast({ description: "Action cancelled" });
               navigate(-1);
             }}
           >
+            <X size={18} className="mr-2" />
             Cancel
-          </div>
-          <div
-            className="cursor-pointer w-full py-1 bg-blue-500 text-black text-center rounded-lg"
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex-1 py-2 bg-blue-500 text-white text-center rounded-lg flex items-center justify-center"
             onClick={() => {
-              toast({
-                description: "Draft saved",
-              });
+              toast({ description: "Draft saved" });
               // Add logic to save draft
             }}
           >
+            <Save size={18} className="mr-2" />
             Save Draft
-          </div>
-          <div
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex-1 py-2 bg-green-500 text-white text-center rounded-lg flex items-center justify-center"
             onClick={handleSubmit}
-            className="cursor-pointer w-full py-1 bg-white text-black text-center rounded-lg"
           >
+            <Check size={18} className="mr-2" />
             Create Product
-          </div>
-        </div>
-      </div>
-      <div className="w-[60%]">
+          </motion.button>
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        className="w-[60%]"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         <ProductDetail
           productData={productData}
           setProductData={setProductData}
         />
-      </div>
+      </motion.div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
-          <div className="relative w-full h-64">
+          <motion.div
+            className="relative w-full h-64"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
             {selectedImages.length > 0 && (
               <Cropper
                 image={URL.createObjectURL(selectedImages[currentImageIndex])}
@@ -340,14 +437,30 @@ const AddProductPage: React.FC = () => {
                 onZoomChange={setZoom}
               />
             )}
-          </div>
-          <div className="flex justify-between mt-4">
-            <Button onClick={handleSkipImage}>Skip</Button>
-            <Button onClick={handleCropImage}>Crop and Upload</Button>
-          </div>
-          <p className="text-center mt-2">
+          </motion.div>
+          <motion.div
+            className="flex justify-between mt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Button onClick={handleSkipImage} className="flex items-center">
+              <SkipForward size={18} className="mr-2" />
+              Skip
+            </Button>
+            <Button onClick={handleCropImage} className="flex items-center">
+              <Crop size={18} className="mr-2" />
+              Crop and Upload
+            </Button>
+          </motion.div>
+          <motion.p
+            className="text-center mt-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             Image {currentImageIndex + 1} of {selectedImages.length}
-          </p>
+          </motion.p>
         </DialogContent>
       </Dialog>
 
@@ -356,7 +469,7 @@ const AddProductPage: React.FC = () => {
         onClose={() => setIsCategoryModalOpen(false)}
         onSelectCategories={handleSelectCategories}
       />
-    </div>
+    </motion.div>
   );
 };
 

@@ -9,92 +9,141 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DollarSign, ShoppingCart } from "lucide-react";
+import { MoreVertical, Eye, FileText, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-interface Invoice {
+interface Order {
   _id: string;
-  image: string;
-  name: string;
-  username: string;
-  price: number;
+  product_name: string;
+  product_image: string;
   quantity: number;
-  discount_type?: string;
-  discount_value?: number;
-  total: number;
-  payment_method: string;
-  payment_status: string;
+  total_amount: number;
+  order_status: string;
 }
 
 const PendingOrder: React.FC = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchInvoices = async () => {
+    const fetchOrders = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
-        const response = await axios.get("http://localhost:8080/invoice", {
-          headers: { accessToken },
-        });
-        setInvoices(response.data);
+        const response = await axios.get(
+          "http://localhost:8080/order/pending",
+          {
+            headers: { accessToken },
+          }
+        );
+        setOrders(response.data);
       } catch (error) {
-        console.error("Error fetching invoices:", error);
+        console.error("Error fetching orders:", error);
       }
     };
-    fetchInvoices();
+    fetchOrders();
   }, []);
 
-  const handleCreateInvoice = (orderId: string) => {
+  const handleViewProduct = (orderId: string) => {
     navigate(`/invoice/create/${orderId}`);
   };
 
+  const handleCreateInvoice = async (orderId: string) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      await axios.post(
+        "http://localhost:8080/invoice/accept",
+        { order_id: orderId },
+        { headers: { accessToken } }
+      );
+      // Refresh orders after creating invoice
+      const response = await axios.get("http://localhost:8080/order/pending", {
+        headers: { accessToken },
+      });
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+    }
+  };
+
+  const handleRefuseOrder = async (orderId: string) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      await axios.post(
+        "http://localhost:8080/invoice/refuse",
+        { order_id: orderId },
+        { headers: { accessToken } }
+      );
+      // Refresh orders after refusing order
+      const response = await axios.get("http://localhost:8080/order/pending", {
+        headers: { accessToken },
+      });
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Error refusing order:", error);
+    }
+  };
+
   return (
-    <div className="bg-background_secondary p-6 rounded-lg shadow">
-      <h2 className="text-2xl font-semibold mb-4">Pending Orders</h2>
+    <div className=" selection:rounded-lg shadow">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12"></TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Price</TableHead>
+            <TableHead>STT</TableHead>
+            <TableHead>Product</TableHead>
             <TableHead>Quantity</TableHead>
-            <TableHead>Discount</TableHead>
             <TableHead>Total</TableHead>
-            <TableHead>Payment Method</TableHead>
-            <TableHead>Payment Status</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice._id}>
+        <TableBody className="bg-background_secondary">
+          {orders.map((order, index) => (
+            <TableRow key={order._id}>
+              <TableCell>{index + 1}</TableCell>
               <TableCell>
-                <img
-                  src={invoice.image}
-                  alt={invoice.name}
-                  className="h-8 w-8"
-                />
+                <div className="flex items-center">
+                  <img
+                    src={order.product_image}
+                    alt={order.product_name}
+                    className="h-8 w-8 mr-2"
+                  />
+                  <span>{order.product_name}</span>
+                </div>
               </TableCell>
-              <TableCell className="font-medium">{invoice.name}</TableCell>
-              <TableCell>{invoice.username}</TableCell>
-              <TableCell>${invoice.price.toFixed(2)}</TableCell>
-              <TableCell>{invoice.quantity}</TableCell>
+              <TableCell>{order.quantity}</TableCell>
+              <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+              <TableCell>{order.order_status}</TableCell>
               <TableCell>
-                {invoice.discount_type && invoice.discount_value
-                  ? `${invoice.discount_type}: ${invoice.discount_value}%`
-                  : "N/A"}
-              </TableCell>
-              <TableCell>${invoice.total.toFixed(2)}</TableCell>
-              <TableCell>{invoice.payment_method}</TableCell>
-              <TableCell>{invoice.payment_status}</TableCell>
-              <TableCell>
-                <button
-                  onClick={() => handleCreateInvoice(invoice._id)}
-                  className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                >
-                  <ShoppingCart size={16} />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <MoreVertical className="h-5 w-5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() => handleViewProduct(order._id)}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      <span>View Product</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleCreateInvoice(order._id)}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      <span>Create Invoice</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleRefuseOrder(order._id)}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      <span>Refuse Order</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}

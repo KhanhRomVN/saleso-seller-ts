@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Camera, Edit2, Save, ArrowLeft } from "lucide-react";
 import Cropper, { Area } from "react-easy-crop";
 import { cropImageFile, handleUploadCroppedImage } from "@/utils/imageUtils";
 import TagInput from "@/components/TagInput";
 import CategoriesSelectedDialog from "@/components/CategoriesSelectedDialog";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Attribute {
   attributes_value: string;
@@ -32,6 +35,9 @@ interface ProductData {
   attributes_name?: string;
   attributes?: Attribute[];
 }
+
+const MotionCard = motion(Card);
+const MotionButton = motion(Button);
 
 const EditProductPage: React.FC = () => {
   const { product_id } = useParams<{ product_id: string }>();
@@ -56,6 +62,7 @@ const EditProductPage: React.FC = () => {
         setProductData(response.data);
       } catch (error) {
         console.error("Error fetching product data:", error);
+        toast.error("Failed to fetch product data");
       } finally {
         setLoading(false);
       }
@@ -67,7 +74,7 @@ const EditProductPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -104,6 +111,7 @@ const EditProductPage: React.FC = () => {
         attributes: prev.attributes.filter((_, i) => i !== index),
       };
     });
+    toast.success("Attribute deleted successfully");
   };
 
   const handleTagsChange: React.Dispatch<React.SetStateAction<string[]>> = (
@@ -130,20 +138,26 @@ const EditProductPage: React.FC = () => {
 
   const handleSaveCroppedImage = async () => {
     if (croppedAreaPixels && selectedImageIndex !== null && productData) {
-      const croppedImage = await cropImageFile(
-        croppedAreaPixels,
-        productData.images[selectedImageIndex]
-      );
-      if (croppedImage) {
-        const uploadedImageUrl = await handleUploadCroppedImage(croppedImage);
-        if (uploadedImageUrl) {
-          setProductData((prev) => {
-            if (!prev) return prev;
-            const newImages = [...prev.images];
-            newImages[selectedImageIndex] = uploadedImageUrl;
-            return { ...prev, images: newImages };
-          });
+      try {
+        const croppedImage = await cropImageFile(
+          croppedAreaPixels,
+          productData.images[selectedImageIndex]
+        );
+        if (croppedImage) {
+          const uploadedImageUrl = await handleUploadCroppedImage(croppedImage);
+          if (uploadedImageUrl) {
+            setProductData((prev) => {
+              if (!prev) return prev;
+              const newImages = [...prev.images];
+              newImages[selectedImageIndex] = uploadedImageUrl;
+              return { ...prev, images: newImages };
+            });
+            toast.success("Image cropped and saved successfully");
+          }
         }
+      } catch (error) {
+        console.error("Error saving cropped image:", error);
+        toast.error("Failed to save cropped image");
       }
     }
     setImageDialogOpen(false);
@@ -157,21 +171,23 @@ const EditProductPage: React.FC = () => {
         images: prev.images.filter((_, i) => i !== index),
       };
     });
+    toast.success("Image deleted successfully");
   };
 
   const handleSaveChanges = async () => {
     try {
       if (!productData) return;
-      console.log(productData);
-
       const accessToken = localStorage.getItem("accessToken");
       await axios.put(
         `http://localhost:8080/product/update/${product_id}`,
         productData,
         { headers: { accessToken } }
       );
+      toast.success("Product updated successfully");
+      navigate("/product/management");
     } catch (error) {
       console.error("Error updating product:", error);
+      toast.error("Failed to update product");
     }
   };
 
@@ -232,44 +248,88 @@ const EditProductPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex gap-2 flex-col p-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="w-full flex gap-2 flex-col p-4"
+    >
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="w-full flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Edit Product</h1>
         <div className="flex gap-2">
-          <Button
+          <MotionButton
             variant="outline"
             onClick={() => navigate("/product/management")}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            Cancel
-          </Button>
-          <Button onClick={handleSaveChanges}>Save Changes</Button>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
+          </MotionButton>
+          <MotionButton
+            onClick={handleSaveChanges}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Save className="mr-2 h-4 w-4" /> Save Changes
+          </MotionButton>
         </div>
       </div>
       <div className="w-full flex gap-4">
-        <div className="w-2/5 bg-background_secondary p-4 rounded-lg">
+        <motion.div
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-2/5 bg-background_secondary p-4 rounded-lg"
+        >
           <h2 className="text-lg font-semibold mb-2">Images</h2>
           <div className="grid grid-cols-2 gap-2">
-            {productData.images.map((image, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={image}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-auto cursor-pointer"
-                  onClick={() => handleImageClick(index)}
-                />
-                <button
-                  className="absolute top-1 right-1 bg-background rounded-full p-1"
-                  onClick={() => handleDeleteImage(index)}
+            <AnimatePresence>
+              {productData.images.map((image, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="relative"
                 >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
+                  <img
+                    src={image}
+                    alt={`Product ${index + 1}`}
+                    className="w-full h-auto cursor-pointer rounded-lg hover:shadow-lg transition-shadow duration-300"
+                    onClick={() => handleImageClick(index)}
+                  />
+                  <motion.button
+                    className="absolute top-1 right-1 bg-background rounded-full p-1"
+                    onClick={() => handleDeleteImage(index)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <X size={16} />
+                  </motion.button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
-          <Button className="w-full mt-4">Add Image</Button>
-        </div>
-        <div className="w-3/5">
-          <Card>
+          <MotionButton
+            className="w-full mt-4"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Camera className="mr-2 h-4 w-4" /> Add Image
+          </MotionButton>
+        </motion.div>
+        <motion.div
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-3/5"
+        >
+          <MotionCard
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             <CardContent className="p-4 bg-background_secondary">
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-1">Name</label>
@@ -321,9 +381,13 @@ const EditProductPage: React.FC = () => {
                     readOnly
                     className="mr-2"
                   />
-                  <Button onClick={() => setIsCategoriesDialogOpen(true)}>
-                    Edit
-                  </Button>
+                  <MotionButton
+                    onClick={() => setIsCategoriesDialogOpen(true)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Edit2 className="mr-2 h-4 w-4" /> Edit
+                  </MotionButton>
                 </div>
               </div>
               <div className="mb-4">
@@ -355,57 +419,90 @@ const EditProductPage: React.FC = () => {
                   <label className="block text-sm font-medium mb-1">
                     Attributes
                   </label>
-                  {productData.attributes.map((attr, index) => (
-                    <div key={index} className="flex space-x-2 mb-2">
-                      <Input
-                        type="text"
-                        value={attr.attributes_value}
-                        onChange={(e) =>
-                          handleAttributeChange(
-                            index,
-                            "attributes_value",
-                            e.target.value
-                          )
-                        }
-                        className="w-1/3"
-                      />
-                      <Input
-                        type="number"
-                        value={attr.attributes_quantity}
-                        onChange={(e) =>
-                          handleAttributeChange(
-                            index,
-                            "attributes_quantity",
-                            parseInt(e.target.value)
-                          )
-                        }
-                        className="w-1/3"
-                      />
-                      <Input
-                        type="number"
-                        value={attr.attributes_price}
-                        onChange={(e) =>
-                          handleAttributeChange(
-                            index,
-                            "attributes_price",
-                            parseFloat(e.target.value)
-                          )
-                        }
-                        className="w-1/3"
-                      />
-                      <Button
-                        variant="destructive"
-                        onClick={() => handleDeleteAttribute(index)}
+                  <AnimatePresence>
+                    {productData.attributes.map((attr, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="flex space-x-2 mb-2"
                       >
-                        Delete
-                      </Button>
-                    </div>
-                  ))}
+                        <Input
+                          type="text"
+                          value={attr.attributes_value}
+                          onChange={(e) =>
+                            handleAttributeChange(
+                              index,
+                              "attributes_value",
+                              e.target.value
+                            )
+                          }
+                          className="w-1/3"
+                        />
+                        <Input
+                          type="number"
+                          value={attr.attributes_quantity}
+                          onChange={(e) =>
+                            handleAttributeChange(
+                              index,
+                              "attributes_quantity",
+                              parseInt(e.target.value)
+                            )
+                          }
+                          className="w-1/3"
+                        />
+                        <Input
+                          type="number"
+                          value={attr.attributes_price}
+                          onChange={(e) =>
+                            handleAttributeChange(
+                              index,
+                              "attributes_price",
+                              parseFloat(e.target.value)
+                            )
+                          }
+                          className="w-1/3"
+                        />
+                        <MotionButton
+                          variant="destructive"
+                          onClick={() => handleDeleteAttribute(index)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <X className="h-4 w-4" />
+                        </MotionButton>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                  <MotionButton
+                    onClick={() =>
+                      setProductData((prev) => {
+                        if (!prev || !prev.attributes) return prev;
+                        return {
+                          ...prev,
+                          attributes: [
+                            ...prev.attributes,
+                            {
+                              attributes_value: "",
+                              attributes_quantity: 0,
+                              attributes_price: 0,
+                            },
+                          ],
+                        };
+                      })
+                    }
+                    className="mt-2"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Add Attribute
+                  </MotionButton>
                 </div>
               )}
             </CardContent>
-          </Card>
-        </div>
+          </MotionCard>
+        </motion.div>
       </div>
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
@@ -423,8 +520,20 @@ const EditProductPage: React.FC = () => {
             )}
           </div>
           <div className="flex justify-between mt-4">
-            <Button onClick={() => setImageDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveCroppedImage}>Save</Button>
+            <MotionButton
+              onClick={() => setImageDialogOpen(false)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Cancel
+            </MotionButton>
+            <MotionButton
+              onClick={handleSaveCroppedImage}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Save
+            </MotionButton>
           </div>
         </DialogContent>
       </Dialog>
@@ -441,9 +550,10 @@ const EditProductPage: React.FC = () => {
               : null
           );
           setIsCategoriesDialogOpen(false);
+          toast.success("Categories updated successfully");
         }}
       />
-    </div>
+    </motion.div>
   );
 };
 

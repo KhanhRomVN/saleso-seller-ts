@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tag, Box, BarChart2 } from "lucide-react";
 import ProductTable from "../product/ProductTable";
 import DiscountDetail from "./DiscountDetail";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface DiscountValue {
   buyQuantity: number;
@@ -80,10 +84,10 @@ const DiscountTicketDialog: React.FC<DiscountTicketDialogProps> = ({
         `http://localhost:8080/discount/${discount_id}`,
         discountData
       );
-      alert("Discount updated successfully");
+      toast.success("Discount updated successfully");
     } catch (error) {
       console.error("Error updating discount:", error);
-      alert("Failed to update discount");
+      toast.error("Failed to update discount");
     }
   };
 
@@ -98,10 +102,10 @@ const DiscountTicketDialog: React.FC<DiscountTicketDialogProps> = ({
         },
         { headers: { accessToken } }
       );
-      alert("Product applied to discount successfully");
+      toast.success("Product applied to discount successfully");
     } catch (error) {
       console.error("Error applying product to discount:", error);
-      alert("Failed to apply product to discount");
+      toast.error("Failed to apply product to discount");
     }
   };
 
@@ -110,10 +114,10 @@ const DiscountTicketDialog: React.FC<DiscountTicketDialogProps> = ({
       await axios.post(`http://localhost:8080/discount/${discount_id}/cancel`, {
         productId,
       });
-      alert("Product removed from discount successfully");
+      toast.success("Product removed from discount successfully");
     } catch (error) {
       console.error("Error removing product from discount:", error);
-      alert("Failed to remove product from discount");
+      toast.error("Failed to remove product from discount");
     }
   };
 
@@ -134,33 +138,54 @@ const DiscountTicketDialog: React.FC<DiscountTicketDialogProps> = ({
   ];
 
   return (
-    <Tabs defaultValue="discountData">
-      <TabsList>
-        <TabsTrigger value="discountData">Discount Data</TabsTrigger>
-        <TabsTrigger value="applyProduct">Apply Product</TabsTrigger>
-        <TabsTrigger value="analytic">Analytic</TabsTrigger>
-      </TabsList>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Tabs defaultValue="discountData">
+            <TabsList>
+              <TabsTrigger value="discountData">
+                <Tag className="mr-2" />
+                Discount Data
+              </TabsTrigger>
+              <TabsTrigger value="applyProduct">
+                <Box className="mr-2" />
+                Apply Product
+              </TabsTrigger>
+              <TabsTrigger value="analytic">
+                <BarChart2 className="mr-2" />
+                Analytic
+              </TabsTrigger>
+            </TabsList>
 
-      <TabsContent value="discountData">
-        <DiscountDetail
-          discountData={discountData}
-          handleInputChange={handleInputChange}
-          handleSaveChanges={handleSaveChanges}
-        />
-      </TabsContent>
+            <TabsContent value="discountData">
+              <DiscountDetail
+                discountData={discountData}
+                handleInputChange={handleInputChange}
+                handleSaveChanges={handleSaveChanges}
+              />
+            </TabsContent>
 
-      <TabsContent value="applyProduct">
-        <ProductTable
-          columns={columns}
-          actions={actions}
-          discount_id={discountData._id}
-        />
-      </TabsContent>
+            <TabsContent value="applyProduct">
+              <ProductTable
+                columns={columns}
+                actions={actions}
+                discount_id={discountData._id}
+              />
+            </TabsContent>
 
-      <TabsContent value="analytic">
-        <p>Analytic data will be displayed here.</p>
-      </TabsContent>
-    </Tabs>
+            <TabsContent value="analytic">
+              <p>Analytic data will be displayed here.</p>
+            </TabsContent>
+          </Tabs>
+          <ToastContainer position="bottom-right" />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

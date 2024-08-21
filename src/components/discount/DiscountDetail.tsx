@@ -1,8 +1,10 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tag, Bookmark, ToggleLeft } from "lucide-react";
 
 interface DiscountValue {
   buyQuantity: number;
@@ -53,36 +55,56 @@ const DiscountDetail: React.FC<DiscountDetailProps> = ({
     } as React.ChangeEvent<HTMLInputElement>);
   };
 
+  const inputVariants = {
+    focus: { scale: 1.05 },
+    tap: { scale: 0.95 },
+  };
+
   return (
     <Card className="w-full mx-auto bg-background_secondary">
       <CardHeader>
-        <CardTitle>Discount Details</CardTitle>
+        <CardTitle className="flex items-center">
+          <Tag className="mr-2" />
+          Discount Details
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-4">
         {/* Name & Code */}
-        <div className="grid grid-cols-2 gap-4">
+        <motion.div className="grid grid-cols-2 gap-4" layout>
           <div>
             <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              name="name"
-              value={discountData.name}
-              onChange={handleInputChange}
-            />
+            <motion.div
+              variants={inputVariants}
+              whileFocus="focus"
+              whileTap="tap"
+            >
+              <Input
+                id="name"
+                name="name"
+                value={discountData.name}
+                onChange={handleInputChange}
+              />
+            </motion.div>
           </div>
           <div>
             <Label htmlFor="code">Code</Label>
-            <Input
-              id="code"
-              name="code"
-              value={discountData.code}
-              onChange={handleInputChange}
-              readOnly
-            />
+            <motion.div
+              variants={inputVariants}
+              whileFocus="focus"
+              whileTap="tap"
+            >
+              <Input
+                id="code"
+                name="code"
+                value={discountData.code}
+                onChange={handleInputChange}
+                readOnly
+              />
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
         {/* Type & Value */}
-        <div className="grid grid-cols-2 gap-4">
+        <motion.div className="grid grid-cols-2 gap-4" layout>
           <div>
             <Label htmlFor="type">Type</Label>
             <Input
@@ -103,9 +125,9 @@ const DiscountDetail: React.FC<DiscountDetailProps> = ({
               readOnly
             />
           </div>
-        </div>
+        </motion.div>
         {/* startDate & endDate */}
-        <div className="grid grid-cols-2 gap-4">
+        <motion.div className="grid grid-cols-2 gap-4" layout>
           <div>
             <Label htmlFor="startDate">Start Date</Label>
             <Input
@@ -128,9 +150,9 @@ const DiscountDetail: React.FC<DiscountDetailProps> = ({
               readOnly
             />
           </div>
-        </div>
+        </motion.div>
         {/* minimumPurchase & customerUsageLimit*/}
-        <div className="grid grid-cols-2 gap-4">
+        <motion.div className="grid grid-cols-2 gap-4" layout>
           <div>
             <Label htmlFor="minimumPurchase">Minimum Purchase</Label>
             <Input
@@ -150,42 +172,68 @@ const DiscountDetail: React.FC<DiscountDetailProps> = ({
               readOnly
             />
           </div>
-        </div>
-        {/* maxUses & currentUses & Active Button */}
-        <div className="grid grid-cols-3 gap-4">
+        </motion.div>
+
+        <motion.div className="grid grid-cols-3 gap-4" layout>
           <div>
             <Label htmlFor="maxUses">Max Uses</Label>
-            <Input
-              id="maxUses"
-              name="maxUses"
-              value={discountData.maxUses}
-              onChange={handleInputChange}
-            />
+            <motion.div
+              variants={inputVariants}
+              whileFocus="focus"
+              whileTap="tap"
+            >
+              <Input
+                id="maxUses"
+                name="maxUses"
+                value={discountData.maxUses}
+                onChange={handleInputChange}
+              />
+            </motion.div>
           </div>
           <div>
             <Label htmlFor="currentUses">Current Uses</Label>
-            <Input
-              id="currentUses"
-              name="currentUses"
-              value={discountData.currentUses}
-              onChange={handleInputChange}
-              readOnly
-            />
+            <motion.div
+              variants={inputVariants}
+              whileFocus="focus"
+              whileTap="tap"
+            >
+              <Input
+                id="currentUses"
+                name="currentUses"
+                value={discountData.currentUses}
+                onChange={handleInputChange}
+                readOnly
+              />
+            </motion.div>
           </div>
           <div className="flex items-end">
-            <Button
-              onClick={toggleActive}
-              variant={discountData.isActive ? "default" : "outline"}
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className="w-full"
             >
-              {discountData.isActive ? "Active" : "Inactive"}
-            </Button>
+              <Button
+                onClick={toggleActive}
+                variant={discountData.isActive ? "default" : "outline"}
+                className="w-full"
+              >
+                <ToggleLeft className="mr-2" />
+                {discountData.isActive ? "Active" : "Inactive"}
+              </Button>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        <Button onClick={handleSaveChanges} className="w-full">
-          Save Changes
-        </Button>
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="w-full"
+        >
+          <Button onClick={handleSaveChanges} className="w-full">
+            <Bookmark className="mr-2" />
+            Save Changes
+          </Button>
+        </motion.div>
       </CardContent>
     </Card>
   );

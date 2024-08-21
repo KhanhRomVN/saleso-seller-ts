@@ -13,9 +13,14 @@ import ProductManagementPage from "./pages/Product/ProductManagementPage";
 // Invoice Page
 import InvoiceManagementPage from "./pages/Invoice/InvoiceManagementPage";
 import CreateInvoice from "./pages/Invoice/CreateInvoice";
+import InvoiceDetail from "./pages/Invoice/InvoiceDetail";
 
 // Discount
 import DiscountPage from "@/pages/DiscountPage";
+
+// Feedback
+import FeedbackPage from "./pages/FeedbackPage";
+
 // Layout Component
 import DefaultLayout from "@/layout/defaultLayout";
 
@@ -81,6 +86,22 @@ const publicRoutes = [
     element: (
       <DefaultLayout>
         <CreateInvoice />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/invoice/:invoice_id",
+    element: (
+      <DefaultLayout>
+        <InvoiceDetail />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/feedback",
+    element: (
+      <DefaultLayout>
+        <FeedbackPage />
       </DefaultLayout>
     ),
   },
